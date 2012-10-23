@@ -5,6 +5,9 @@ include $(QCONFIG)
 
 USEFILE=
 
+EXTRA_SRCVPATH+=$(PROJECT_ROOT)/public \
+    $(PROJECT_ROOT)/src \
+    
 # Extra include path for libfreetype and for target overrides and patches
 EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
 	$(QNX_TARGET)/../target-override/usr/include
