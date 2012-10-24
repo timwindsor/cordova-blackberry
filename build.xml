@@ -96,7 +96,7 @@
     <!-- BUILD QNX EXTENSION -->
     
     <target name="build-qnx-extension">
-
+        
         <!-- Copy Ext -->
         <mkdir dir="${build.dir}/${qnx.ext.path}" />
         <copy todir="${build.dir}/${qnx.ext.path}">
