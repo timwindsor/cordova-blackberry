@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 
+#include <../public/json/reader.h>
 #include <string>
 #include <sstream>
 #include <sys/stat.h>
@@ -71,9 +72,30 @@ bool Echo::CanDelete() {
  * called on the JavaScript side with this native objects id.
  */
 string Echo::InvokeMethod(const string& command) {
+    int index = command.find_first_of(" ");
+    std::string method = command.substr(0, index);
+    
+    // read in arguments
+    Json::Value obj;
+    if (command.length() > index) {
+        std::string jsonObject = command.substr(index + 1, command.length());
+        Json::Reader reader;
+
+        bool parse = reader.parse(jsonObject, obj);
+        if (!parse) {
+            fprintf(stderr, "%s", "error parsing\n");
+            return "Cannot parse JSON object";
+        }
+    }    
+    
     // Determine which function should be executed
-    if (command == "doEcho") {
-        return doEcho("hi");
+    if (method == "doEcho") {
+        // will this work?
+        if(obj["message"] != NULL) {
+            return doEcho(obj["message"].asString());
+        }else{
+             return doEcho("Nothing to echo.");
+        }
     }else{
         return "Unsupported Method";
     }

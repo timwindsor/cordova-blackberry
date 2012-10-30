@@ -10,7 +10,8 @@ EXTRA_SRCVPATH+=$(PROJECT_ROOT)/public \
     
 # Extra include path for libfreetype and for target overrides and patches
 EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
-	$(QNX_TARGET)/../target-override/usr/include
+	$(QNX_TARGET)/../target-override/usr/include \
+	
 
 # Extra library search path for target overrides and patches
 EXTRA_LIBVPATH+=$(QNX_TARGET)/../target-override/$(CPUVARDIR)/lib \

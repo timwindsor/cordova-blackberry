@@ -17,9 +17,10 @@ var echoJNext,
     _event = require("../../lib/event");
 
 module.exports = {
-    doEcho: function (success, fail, args, env) {
+    doEcho: function (success, fail, args) {
+        var invokeData = { "message" : JSON.parse(decodeURIComponent(args.message)) };
         try {
-            success(echoJNext.getEchoJNext());
+            success(echoJNext.getEchoJNext(invokeData));
         } catch (e) {
             fail(-1, e);
         }
@@ -34,8 +35,8 @@ JNEXT.EchoJNext = function ()
 {   
     var _self = this;
 
-    _self.getEchoJNext = function () {
-        return JNEXT.invoke(_self._id, "doEcho");
+    _self.getEchoJNext = function (args) {
+        return JNEXT.invoke(_self._id, "doEcho " + JSON.stringify(args));
     };
 
     _self.getId = function () {
@@ -57,9 +58,6 @@ JNEXT.EchoJNext = function ()
     };
 
     _self.onEvent = function (strData) {
-        var arData = strData.split(" "),
-            strEventId = arData[0],
-            arg = arData[1];
     };
     
     _self._id = "";

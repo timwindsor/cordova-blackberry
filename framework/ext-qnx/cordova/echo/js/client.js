@@ -17,8 +17,9 @@
 var _self = {},
     _ID = require("./manifest.json").namespace;
 
-_self.doEcho = function () {
-    return window.webworks.execSync(_ID, "doEcho", null);
+_self.doEcho = function (args) {
+    var data = { "message" : args.message || "" };
+    return window.webworks.execSync(_ID, "doEcho", data);
 };
 
 module.exports = _self;
