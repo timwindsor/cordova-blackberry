@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 var echoJNext,
-    _event = require("../../lib/event");
-
-module.exports = {
+    _event = require("../../lib/event"),
+    winCallback = null,
+    failCallback = null;
+    
+module.exports = {   
     doEcho: function (success, fail, args) {
         var invokeData = { "message" : JSON.parse(decodeURIComponent(args.message)) };
         try {
@@ -58,6 +60,15 @@ JNEXT.EchoJNext = function ()
     };
 
     _self.onEvent = function (strData) {
+        var arData = strData.split(" "),
+            strEventId = arData[0],
+            args = arData[1],
+            info = {};
+            
+        if (strEventId === "cordova.echo.callback") {
+            _event.trigger("echoCallback", args);
+        }
+                  
     };
     
     _self._id = "";

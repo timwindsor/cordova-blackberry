@@ -15,11 +15,34 @@
 */
  
 var _self = {},
-    _ID = require("./manifest.json").namespace;
+    _ID = require("./manifest.json").namespace,
+    win = null,
+    fail = null;
 
-_self.doEcho = function (args) {
+function handleCallback(result) {
+    if (result) {
+        if(win){
+            win(result);
+        }
+    } else {
+        if(fail){
+            fail(result);
+        }
+    }
+    win = null;
+    fail = null;
+}
+
+_self.doEcho = function (args, theWin, theFail) {
     var data = { "message" : args.message || "" };
+    
+    win = theWin;
+    fail = theFail;
+    
+    window.webworks.event.add(_ID, "echoCallback", handleCallback);
+    
     return window.webworks.execSync(_ID, "doEcho", data);
 };
+
 
 module.exports = _self;

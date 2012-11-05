@@ -97,7 +97,7 @@ string Echo::InvokeMethod(const string& command) {
              return doEcho("Nothing to echo.");
         }
     }else{
-        return "Unsupported Method";
+        return doEcho("Unsupported Method");
     }
 }
 
@@ -105,5 +105,11 @@ string Echo::InvokeMethod(const string& command) {
  * Method that sends off Event message
  */
 string Echo::doEcho(const std::string& message) {
-    return message;
+    std::string eventString = m_id;
+    eventString.append(" ");
+    eventString.append("cordova.echo.callback");
+    eventString.append(" ");
+    eventString.append(message);
+    SendPluginEvent(eventString.c_str(), m_pContext);
+    return eventString;
 }
