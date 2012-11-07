@@ -96,12 +96,34 @@
     <!-- BUILD QNX EXTENSION -->
     
     <target name="build-qnx-extension">
+        <!-- Copy Ext -->        
+        <copy todir="${build.dir}/${qnx.ext.path}" >
+            <fileset dir="${qnx.ext.src}">
+               <exclude name="**/Makefile" />
+               <exclude name="**/*.mk" />
+               <exclude name="**/nto" />
+               <exclude name="**/nto/**" />
+               <exclude name="**/public" />
+               <exclude name="**/public/**" />
+               <exclude name="**/src" />
+               <exclude name="**/src/**" />
+            </fileset>
+        </copy>     
         
-        <!-- Copy Ext -->
-        <mkdir dir="${build.dir}/${qnx.ext.path}" />
-        <copy todir="${build.dir}/${qnx.ext.path}">
-            <fileset dir="${qnx.ext.src}" />
+        <!-- Gets the contents of the js folder and places it in the parent directory -->
+        <copy todir="${build.dir}/${qnx.ext.path}/">
+            <fileset dir="${build.dir}/${qnx.ext.path}">
+                <include name="**/js/*.js" />
+                <include name="**/js/*.json" />
+                <exclude name="**/device" />
+                <exclude name="**/device/*" />
+            </fileset>
+            <mapper type="regexp" from="^([^/]+)/js/(.*)$$" to="\1/\2"/> 
         </copy>
+        
+        <delete includeEmptyDirs="true">
+            <fileset dir="${build.dir}/${qnx.ext.path}" includes="**/js/"/>
+        </delete>
     </target>
     
     <!-- CREATE A PROJECT -->
