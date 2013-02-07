@@ -21,14 +21,14 @@ ANT=$(which ant)
 if [ -z "$1" ]
 then
   echo 'usage: build <platform>'
-  echo 'where <platform> can be one of "blackberry", "playbook" or "qnx"'
+  echo 'where <platform> can be one of "blackberry" or "playbook"'
   echo 'NOTE: please customize the project.properties file first before using this command!'
   exit 0
 fi
 
-if [ "$1" == "blackberry" -o "$1" == "playbook" -o "$1" == "qnx" ]
+if [ "$1" == "blackberry" -o "$1" == "playbook" ]
 then
   $ANT $1 build
 else
-  echo 'Platform not recognized! Please use one of "blackberry", "playbook", or "qnx" for the platform parameter.'
+  echo 'Platform not recognized! Please use one of "blackberry" or "playbook" for the platform parameter.'
 fi

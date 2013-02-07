@@ -1,5 +1,5 @@
 <project name="Build and Deploy a Cordova BlackBerry WebWorks Project" default="help">
-<!-- 
+<!--
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -16,9 +16,9 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
--->    
+-->
     <!-- LOAD ANT-CONTRIB LIBRARY -->
-    
+
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
       <classpath>
         <pathelement location="./lib/ant-contrib/ant-contrib-1.0b3.jar" />
@@ -26,31 +26,27 @@
     </taskdef>
 
     <!-- LOAD PROPERTIES -->
-    
+
     <property prefix="properties" file="project.properties" />
     <property name="build.dir"    location="build" />
     <property name="widget.dir"   location="${build.dir}/widget" />
     <property name="code.sign"    value="false" />
     <property name="globalization" value="false" />
-        
+
     <target name="blackberry" >
         <property name="subant.file"  value="blackberry.xml" />
     </target>
-    
+
     <target name="playbook" >
         <property name="subant.file"  value="playbook.xml" />
     </target>
 
-    <target name="qnx" >
-        <property name="subant.file"  value="qnx.xml" />
-    </target>
-    
     <target name="load-device">
         <subant target="load-device">
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <target name="load-simulator">
         <subant target="load-simulator">
             <fileset dir="." includes="${subant.file}"/>
@@ -68,7 +64,7 @@
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <target name="build">
         <subant target="build">
             <fileset dir="." includes="${subant.file}"/>
@@ -80,27 +76,27 @@
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <target name="clean-device">
         <subant target="clean-device">
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <target name="package-app">
         <subant target="package-app">
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <target name="clean-simulator">
         <subant target="clean-simulator">
             <fileset dir="." includes="${subant.file}"/>
         </subant>
     </target>
-    
+
     <!-- HELP -->
-    
+
     <target name="help">
         <echo>
 NAME
@@ -111,13 +107,11 @@ SYNOPSIS
 
 DESCRIPTION
   You can build and deploy your project to a device or simulator.
-  
+
 TARGETS
   blackberry ........ Builds a cod file and deploys to a device or simulator
- 
-  playbook .......... Builds a bar file and deploys to a device or simulator
 
-  qnx ............... Builds a bar file and deploys to a device or simulator
+  playbook .......... Builds a bar file and deploys to a device or simulator
 
 COMMANDS
   help .............. Show this help menu.
