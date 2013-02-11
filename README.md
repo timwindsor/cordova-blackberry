@@ -1,7 +1,7 @@
 Cordova BlackBerry WebWorks
 ============================
 
-[Cordova framework](http://incubator.apache.org/cordova/) for __BlackBerry Tablet OS, Smartphones and BlackBerry 10 devices__. The framework is implemented using the [BlackBerry WebWorks SDK](http://us.blackberry.com/developers/tablet/webworks.jsp).
+[Cordova framework](http://incubator.apache.org/cordova/) for __BlackBerry 10 devices__. The framework is implemented using the [BlackBerry WebWorks SDK](http://us.blackberry.com/developers/tablet/webworks.jsp).
 
 Directory Structure
 -------------------
@@ -56,7 +56,7 @@ will need to specify things like the location of the BlackBerry Widget
 Packager(s), device and signing key passwords, simulator executables,
 and device IPs (if applicable).
 
-The ./bin/create command is also required to be called in order to automatically download 
+The ./bin/create command is also required to be called in order to automatically download
 the bin/template/project/lib/ant-contrib.jar file. Please be aware that without running
 this command first, your project will not have this important file! Once that ant-contrib.jar
 file is downloaded, there is no need to update that file or download again.
@@ -115,20 +115,17 @@ The Cordova build scripts automate common tasks, such as compiling your project,
     $ cd C:\development\my_new_project
     $ ant help
 
-Every command is in the form `ant TARGET COMMAND [options]`, where
-target is either `blackberry`, `playbook` or `qnx`.
+To build your project into a deployable application (.bar) file:
 
-To build your project into a deployable application (.cod/.jad) file:
+    $ ant build
 
-    $ ant TARGET build
+To build your project and load it in a BlackBerry 10 simulator:
 
-To build your project and load it in a BlackBerry simulator:
+    $ ant load-simulator
 
-    $ ant TARGET load-simulator
+To build your project and load it onto a USB-attached (or wifi connected) device:
 
-To build your project and load it onto a USB-attached device:
-
-    $ ant TARGET load-device
+    $ ant load-device
 
 Updating the Cordova Framework
 -------------------------------
@@ -144,8 +141,8 @@ Customizing Cordova
 --------------------
 
 By default, Cordova gives access to all the core Cordova APIs as detailed at docs.cordova.io.
-If you want to remove some of those APIs you can do so by editing the plugins.xml document in your 
-application root. You need to edit the plugins.xml file to add third-party plugins to your application 
+If you want to remove some of those APIs you can do so by editing the plugins.xml document in your
+application root. You need to edit the plugins.xml file to add third-party plugins to your application
 as well.
 
 Creating a Distribution

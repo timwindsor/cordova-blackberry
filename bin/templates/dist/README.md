@@ -11,8 +11,6 @@ Pre-requisites
 - Windows XP (32-bit) or Windows 7 (32-bit and 64-bit) or Mac OSX 10.6.4+
 - Java JDK 1.5
 - Apache ANT
-- [BlackBerry WebWorks SDK](https://bdsc.webapps.blackberry.com/html5/download/sdk)
-- PlayBook development requires [Adobe Air SDK](http://www.adobe.com/devnet/air/air-sdk-download.html)
 
 Directory Structure
 -------------------
@@ -31,20 +29,18 @@ The build scripts included in the `sample` folder automate common tasks, such as
     $ cd C:\development\my_new_project
     $ ant help
 
-Every command is in the form `ant TARGET COMMAND [options]`, where
-target is either `blackberry` or `playbook`.
 
 To build your project into a deployable application (.cod/.jad) file:
 
-    $ ant TARGET build
+    $ ant build
 
 To build your project and load it in a BlackBerry simulator:
 
-    $ ant TARGET load-simulator
+    $ an load-simulator
 
 To build your project and load it onto a USB-attached device:
 
-    $ ant TARGET load-device
+    $ ant load-device
 
 ### Barebones Project Assets
 
@@ -62,7 +58,7 @@ The `www` folder contains the Cordova specific assets that must be available in 
     <!-- Cordova API -->
     <feature ... />
     <feature ... />
-    
+
     <!-- Cordova API -->
     <access ... />
     <access ... />
