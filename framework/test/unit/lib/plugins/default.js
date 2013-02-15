@@ -55,16 +55,20 @@ describe("default plugin", function () {
                 }
             };
 
-            testExtension = require(ROOT + "ext/app/index");
+            testExtension = {
+                getReadOnlyFields: function () {}
+            };
 
             delete require.cache[require.resolve(ROOT + "lib/utils")];
             utils = require(ROOT + "lib/utils");
             spyOn(utils, "loadModule").andCallFake(function (module) {
                 // on device, "ext/blackberry.app/index.js" would exist since packager would
-                // name the extension folder with feature id in compilation time,
-                // but in unit test environment, it's the real extension folder being used
-                module = "../../../" + module.replace("blackberry.", "");
-                return require(module);
+                // name the extension folder with feature id in compilation time
+                if (module.indexOf("/ext") !== -1) {
+                    return testExtension;
+                } else {
+                    return undefined;
+                }
             });
         });
 

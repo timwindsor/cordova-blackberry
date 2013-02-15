@@ -27,15 +27,15 @@ describe("server", function () {
         config = {};
 
     beforeEach(function () {
-        applicationAPIServer = require(ROOT + "ext/app/index");
+        applicationAPIServer = {
+            getReadOnlyFields: function () {}
+        };
         delete require.cache[require.resolve(ROOT + "lib/utils")];
         utils = require("../../../lib/utils");
         spyOn(utils, "loadModule").andCallFake(function (module) {
             if (module.indexOf("ext/") >= 0) {
-                // on device, "ext/blackberry.app/index.js" would exist since packager would
-                // name the extension folder with feature id in compilation time,
-                // but in unit test environment, it's the real extension folder being used
-                return require("../../" + module.replace("blackberry.", ""));
+                // on device, "ext/blackberry.app/index.js" would exist
+                return applicationAPIServer;
             } else {
                 return require("../../../lib/" + module);
             }

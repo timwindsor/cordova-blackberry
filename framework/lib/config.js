@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-var defaults = require('./config/default'), 
-    user = require('./config/user'), 
+var defaults = require('./config/default'),
+    user = require('./config/user'),
     utils = require('./utils');
 
-module.exports = utils.mixin(user, 
+module.exports = utils.mixin(user,
                  utils.mixin(defaults, {}));

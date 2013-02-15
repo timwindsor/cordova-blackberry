@@ -35,10 +35,10 @@ function _trimSurroundingSlashes(path) {
 // Folder path must not include the scheme or the host
 function _determineDepth(folderPath) {
     var depthCount = 0;
-    
+
     // Replace all backslashes with forward slash
     folderPath = folderPath.replace("\\", "/");
-    
+
     // Special case: "/" is the given path
     if (folderPath === "/") {
         return 0;
@@ -61,7 +61,7 @@ function _determineDepth(folderPath) {
 }
 
 // Parse a folder path up to the desired depth
-function _getPath(folderPath, desiredDepth) {   
+function _getPath(folderPath, desiredDepth) {
     var depthCount = 0, builtPath = "";
 
     // Special case: Desired depth is 0
@@ -70,14 +70,14 @@ function _getPath(folderPath, desiredDepth) {
     }
 
     // Replace all backslashes with forward slash
-    folderPath = folderPath.replace("\\", "/");       
+    folderPath = folderPath.replace("\\", "/");
 
     folderPath = _trimSurroundingSlashes(folderPath);
 
     // Count slashes remaining
     while (depthCount < desiredDepth) {
         depthCount += 1;
-        
+
         // Add 1 to skip the slash
         builtPath += "/" + folderPath.substring(0, folderPath.indexOf('/'));
         folderPath = folderPath.substring(folderPath.indexOf('/') + 1);
@@ -110,7 +110,7 @@ WebFolderAccessManager.prototype.addAccess = function (folderPath, access) {
     this._maxPathLength = Math.max(this._maxPathLength, _determineDepth(folderPath));
 };
 
-WebFolderAccessManager.prototype.getAccess = function (folderPath) {   
+WebFolderAccessManager.prototype.getAccess = function (folderPath) {
     var depth = _determineDepth(folderPath);
     return this.getAccessRecursively(folderPath, depth);
 };

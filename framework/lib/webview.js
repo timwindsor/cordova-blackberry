@@ -26,12 +26,7 @@ var networkResourceRequested = require('./webkitHandlers/networkResourceRequeste
 webview =
     {
     create: function (ready) {
-        //@if qnxcar
-        _webviewObj = window.qnx.webplatform.createWebView({}, function () {
-        //@else
         _webviewObj = window.qnx.webplatform.createWebView({processId: OUT_OF_PROCESS, defaultSendEventHandlers: ['onChooseFile', 'onOpenWindow'], defaultWebEventHandlers: ['InvokeRequestEvent']}, function () {
-        //@endif
-
             //Create webkit event handlers
             var requestObj =  networkResourceRequested.createHandler(_webviewObj);
 
