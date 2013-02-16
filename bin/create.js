@@ -1,20 +1,20 @@
 /*
-       Licensed to the Apache Software Foundation (ASF) under one
-       or more contributor license agreements.  See the NOTICE file
-       distributed with this work for additional information
-       regarding copyright ownership.  The ASF licenses this file
-       to you under the Apache License, Version 2.0 (the
-       "License"); you may not use this file except in compliance
-       with the License.  You may obtain a copy of the License at
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-       Unless required by applicable law or agreed to in writing,
-       software distributed under the License is distributed on an
-       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-       KIND, either express or implied.  See the License for the
-       specific language governing permissions and limitations
-       under the License.
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
 */
 
 /*
@@ -24,106 +24,92 @@
  *  ./create [path package appname]
  */
 
-var fso = WScript.CreateObject('Scripting.FileSystemObject');
+var build,
+    path = require("path"),
+    fs = require("fs"),
+    wrench = require("wrench"),
+    jWorkflow = require("jWorkflow"),
+    utils = require('./lib/utils'),
+    version = getVersion(),
+    project_path = process.argv[2],
+    project_package = process.argv[3],
+    app_name = process.argv[4],
+    template_project_dir = "/templates/project",
+    modules_project_dir = "/../node_modules",
+    framework_project_dir = "/../framework",
+    build_dir = "build",
+    update_dir = "lib/cordova." + version,
+    js_src = "../javascript",
+    js_path = "javascript",
+    js_basename = "cordova-" + version + ".js";
 
-function read(filename) {
-    var fso=WScript.CreateObject("Scripting.FileSystemObject");
-    var f=fso.OpenTextFile(filename, 1);
-    var s=f.ReadAll();
-    f.Close();
-    return s;
-}
-function write(filename, contents) {
-    var fso=WScript.CreateObject("Scripting.FileSystemObject");
-    var f=fso.OpenTextFile(filename, 2, true);
-    f.Write(contents);
-    f.Close();
-}
-function replaceInFile(filename, regexp, replacement) {
-    write(filename, read(filename).replace(regexp, replacement));
-}
-function downloadAntContrib(){
-    if (!fso.FileExists(ROOT + '\\bin\\templates\\project\\lib\\ant-contrib\\ant-contrib-1.0b3.jar')) {
-      // We need the .jar
-      var url = 'http://central.maven.org/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar';
-      var libsPath = ROOT + '\\bin\\templates\\project\\lib\\ant-contrib';
-      var savePath = libsPath + '\\ant-contrib-1.0b3.jar';
-      if (!fso.FileExists(savePath)) {
-        if(!fso.FolderExists(libsPath)) {
-            fso.CreateFolder(libsPath);
+    function getVersion() {
+        var version = fs.readFileSync(__dirname + "/../VERSION");
+        if (version) {
+            return version.toString();
         }
-        // We need the zip to get the jar
-        var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
-        xhr.open('GET', url, false);
-        xhr.send();
-        if (xhr.status == 200) {
-          var stream = WScript.CreateObject('ADODB.Stream');
-          stream.Open();
-          stream.Type = 1;
-          stream.Write(xhr.ResponseBody);
-          stream.Position = 0;
-          stream.SaveToFile(savePath);
-          stream.Close();
-        } else {
-          WScript.Echo('Could not retrieve the antcontrib. Please download it yourself and put into the bin/templates/project/lib directory. This process may fail now. Sorry.');
+    }
+
+    function validate() {
+        if (!project_path) {
+            throw "You must give a project PATH.";
         }
-      }
-      var app = WScript.CreateObject('Shell.Application');
-      var source = app.NameSpace(savePath).Items();
-      var target = app.NameSpace(libsPath);
-      target.CopyHere(source, 256);
+        if (fs.existsSync(project_path)) {
+            throw "The project path must be an empty directory.";
+        }
     }
-}
-function exec(s, output) {
-    var o=shell.Exec(s);
-    while (o.Status == 0) {
-        WScript.Sleep(100);
+
+    function clean() {
+        if (fs.existsSync(build_dir)) {
+            wrench.rmdirSyncRecursive(build_dir);
+        }
     }
-    //WScript.Echo("Command exited with code " + o.Status);
-}
 
-function cleanup() {
-    // Cleanup
-    if(fso.FolderExists(ROOT + '\\dist')) {
-        fso.DeleteFolder(ROOT + '\\dist', true);
+    function copyJavascript() {
+        wrench.mkdirSyncRecursive(build_dir + "/" + js_path, 0777);
+        utils.copyFile(__dirname + "/" + js_src + "/cordova.blackberry10.js", build_dir + "/" + js_path);
+
+        //rename copied cordova.blackberry10.js file
+        fs.renameSync(build_dir + "/" + js_path + "/cordova.blackberry10.js", build_dir + "/" + js_path + "/" + js_basename);
     }
-    if(fso.FolderExists(ROOT + '\\build')) {
-        fso.DeleteFolder(ROOT + '\\build');
+
+    function copyFilesToProject() {
+        // create project using template directory
+        wrench.mkdirSyncRecursive(project_path, 0777);
+        wrench.copyDirSyncRecursive(__dirname + template_project_dir, project_path);
+
+        // change file permission for cordova scripts because ant copy doesn't preserve file permissions
+        wrench.chmodSyncRecursive(project_path + "/cordova", 0700);
+
+        //copy node modules to cordova build directory
+        wrench.mkdirSyncRecursive(project_path + "/cordova/node_modules", 0777);
+        wrench.copyDirSyncRecursive(__dirname + modules_project_dir, project_path + "/cordova/node_modules");
+
+        //copy framework
+        wrench.copyDirSyncRecursive(__dirname + framework_project_dir, project_path + "/cordova/framework");
+
+        // save release
+        wrench.mkdirSyncRecursive(project_path + "/" + update_dir, 0777);
+        wrench.copyDirSyncRecursive(build_dir, project_path + "/" + update_dir);
     }
-}
 
-var args = WScript.Arguments, PROJECT_PATH="example", 
-    PACKAGE="org.apache.cordova.example",
-    NAME="cordovaExample",
-    shell=WScript.CreateObject("WScript.Shell");
-    
-// working dir
-var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
+    function done(error) {
+        if (error) {
+            console.log("Project creation failed!\n" + "Error: " + error);
+            process.exit(1);
+        }
+        else {
+            console.log("Project creation complete!\n");
+            process.exit();
+        }
+    }
 
-if (args.Count() == 3) {
-    PROJECT_PATH=args(0);
-    PACKAGE=args(1);
-    NAME=args(2);
-}
+    build = jWorkflow.order(validate)
+                     .andThen(clean)
+                     .andThen(copyJavascript)
+                     .andThen(copyFilesToProject);
 
-if(fso.FolderExists(PROJECT_PATH)) {
-    WScript.Echo("Project directory already exists! Please remove it first.");
-    WScript.Quit(1);
-}
+    build.start(function (error) {
+        done(error);
+    });
 
-var MANIFEST_PATH=PROJECT_PATH+'\\www\\config.xml';
-var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
-
-if(fso.FolderExists(ROOT+'\\framework')){
-    downloadAntContrib();
-    exec('ant.bat -f '+ ROOT +'\\build.xml create -Dproject.path="' + PROJECT_PATH + '"');
-    replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
-    replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, NAME);
-}else{
-    // copy in the project template
-    exec('cmd /c xcopy '+ ROOT + '\\sample\\* '+PROJECT_PATH+' /I /S /Y');    
-    replaceInFile(MANIFEST_PATH, /org.apache.cordova.example/, PACKAGE);
-    replaceInFile(MANIFEST_PATH, /cordovaExample/, NAME);
-}
-
-cleanup();

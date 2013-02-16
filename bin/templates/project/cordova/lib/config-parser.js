@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-var fs = require("fsext"),
+var fs = require("fs"),
     util = require('util'),
     xml2js = require('xml2js'),
-    path = require("path"),
     packagerUtils = require('./packager-utils'),
     check = require('validator').check,
     sanitize = require('validator').sanitize,
@@ -163,6 +162,7 @@ function processWidgetData(data, widgetConfig, session, extManager) {
     widgetConfig.enableFlash = false;
     widgetConfig.autoOrientation = true;
     widgetConfig.autoDeferNetworkingAndJavaScript = true;
+    widgetConfig.theme = "default";
 
     //set locally available features to access list
     if (data.feature) {
@@ -266,12 +266,12 @@ function processIconData(data, widgetConfig, session) {
     //
     var default_icon_filename = "default-icon.png",
         default_icon_src = session.conf.DEFAULT_ICON,
-        default_icon_dst = path.join(session.sourceDir, default_icon_filename);
+        default_icon_dst = session.sourceDir;
 
     processSplashScreenIconSrc(data, widgetConfig, "icon");
 
     if (!widgetConfig.icon) {
-        fs.copySync(default_icon_src, default_icon_dst);
+        packagerUtils.copyFile(default_icon_src, default_icon_dst);
 
         widgetConfig["icon"] = [];
         widgetConfig["icon"].push(default_icon_filename);
@@ -430,6 +430,7 @@ function validateConfig(widgetConfig) {
     }
 
     check(widgetConfig.author, localize.translate("EXCEPTION_INVALID_AUTHOR")).notNull();
+    check(widgetConfig.id, localize.translate("EXCEPTION_INVALID_ID")).notNull().notEmpty();
     check(widgetConfig.content, localize.translate("EXCEPTION_INVALID_CONTENT"))
         .notNull()
         .notEmpty();
@@ -602,6 +603,8 @@ function init() {
                     childBrowser = params.childBrowser,
                     formControl = params.formControl,
                     orientation = params.orientation,
+                    theme = params.theme,
+                    popupBlocker = params.popupBlocker,
                     websecurity = params.websecurity;
 
                 if (bgColor) {
@@ -624,12 +627,24 @@ function init() {
                     widgetConfig.enableFormControl = ((formControl + '').toLowerCase() === 'disable') === false;
                 }
 
+                if (popupBlocker) {
+                    widgetConfig.enablePopupBlocker = ((popupBlocker + '').toLowerCase() === 'enable') === true;
+                }
+
                 if (orientation) {
                     if (orientation ===  "landscape" || orientation === "portrait" || orientation === "north") {
                         widgetConfig.autoOrientation = false;
                         widgetConfig.orientation = orientation;
                     } else if (orientation !== "auto") {
                         throw localize.translate("EXCEPTION_INVALID_ORIENTATION_MODE", orientation);
+                    }
+                }
+
+                if (theme && (typeof theme === "string")) {
+                    theme = theme.toLowerCase();
+
+                    if (theme ===  "bright" || theme === "dark" || theme === "inherit" || theme ===  "default") {
+                        widgetConfig.theme = theme;
                     }
                 }
 
@@ -644,7 +659,7 @@ function init() {
 
 _self = {
     parse: function (xmlPath, session, extManager, callback) {
-        if (!path.existsSync(xmlPath)) {
+        if (!fs.existsSync(xmlPath)) {
             throw localize.translate("EXCEPTION_CONFIG_NOT_FOUND");
         }
 

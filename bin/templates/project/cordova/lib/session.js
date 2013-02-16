@@ -15,6 +15,7 @@
  */
 
 var path = require("path"),
+    fs = require("fs"),
     wrench = require("wrench"),
     logger = require("./logger"),
     signingHelper = require("./signing-helper"),
@@ -27,7 +28,7 @@ function getParams(cmdline, toolName) {
         if (!params) {
             var paramsPath = path.resolve(cmdline.params);
 
-            if (path.existsSync(paramsPath)) {
+            if (fs.existsSync(paramsPath)) {
                 try {
                     params = require(paramsPath);
                 } catch (e) {
@@ -54,6 +55,7 @@ module.exports = {
             outputDir = cmdline.output,
             archivePath = path.resolve(cmdline.args[0]),
             archiveName = path.basename(archivePath, '.zip'),
+            appdesc,
             buildId = cmdline.buildId;
 
         //If -o option was not provided, default output location is the same as .zip
@@ -63,17 +65,23 @@ module.exports = {
         if (cmdline.password && "string" === typeof cmdline.password) {
             signingPassword = cmdline.password;
         }
-        
+
+        if (cmdline.appdesc && "string" === typeof cmdline.appdesc) {
+            appdesc = path.resolve(cmdline.appdesc);
+        }
+
         //If -s [dir] is provided
         if (cmdline.source && "string" === typeof cmdline.source) {
             sourceDir = cmdline.source + "/src";
         } else {
             sourceDir = outputDir + "/src";
         }
-        
-        if (!path.existsSync(sourceDir)) {
+
+        if (!fs.existsSync(sourceDir)) {
             wrench.mkdirSyncRecursive(sourceDir, "0755");
         }
+
+        logger.level(cmdline.loglevel || 'verbose');
 
         return {
             "conf": require("./conf"),
@@ -92,13 +100,13 @@ module.exports = {
             "archivePath": archivePath,
             "archiveName": archiveName,
             "barPath": outputDir + "/%s/" + archiveName + ".bar",
-            "verbose": !!cmdline.verbose,
             "debug": !!cmdline.debug,
             "keystore": signingHelper.getKeyStorePath(),
             "keystoreCsk": signingHelper.getCskPath(),
             "keystoreDb": signingHelper.getDbPath(),
             "storepass": signingPassword,
             "buildId": buildId,
+            "appdesc" : appdesc,
             getParams: function (toolName) {
                 return getParams(cmdline, toolName);
             },

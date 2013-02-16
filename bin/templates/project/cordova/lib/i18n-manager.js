@@ -15,6 +15,7 @@
  */
 
 var path = require("path"),
+    fs = require("fs"),
     wrench = require("wrench"),
     pkgrUtils = require("./packager-utils"),
     LOCALES_DIR = "locales";
@@ -42,8 +43,12 @@ function generateLocalizedMetadataForSplashScreenIcon(config, configKey, xmlObje
 
     if (localeFiles) {
         localeFiles.forEach(function (path) {
-            var splitted = path.split("/"),
+            var splitted = path.replace(/\.\./g, "").split("/"),
                 locale;
+
+            splitted = splitted.filter(function (element) {
+                return element.length > 0;
+            });
 
             if (splitted.length > 1) {
                 locale = splitted[0];
@@ -117,10 +122,10 @@ function generateLocalizedMetadata(session, config, xmlObject, key) {
         var localeFiles,
             normalizedLocaleFiles = [];
 
-        if (path.existsSync(session.sourceDir + "/" + LOCALES_DIR)) {
+        if (fs.existsSync(session.sourceDir + "/" + LOCALES_DIR)) {
             localeFiles = wrench.readdirSyncRecursive(session.sourceDir + "/" + LOCALES_DIR);
-
             if (pkgrUtils.isWindows()) {
+
                 localeFiles.forEach(function (file) {
                     file = path.relative(path.resolve(session.sourceDir, "locales"), file).replace(/\\/g, "/");
                     normalizedLocaleFiles.push(file);

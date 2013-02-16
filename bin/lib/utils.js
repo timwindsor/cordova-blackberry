@@ -18,7 +18,6 @@ var fs = require('fs'),
     path = require('path'),
     wrench = require('wrench'),
     localize = require("./localize"),
-    logger = require("./logger"),
     os = require('os'),
     _self;
 
@@ -51,12 +50,12 @@ _self = {
             if (err) throw err;
         });
     },
-    
+
     copyFile: function (srcFile, destDir, baseDir) {
         var filename = path.basename(srcFile),
             fileBuffer = fs.readFileSync(srcFile),
             fileLocation;
-        
+
         //if a base directory was provided, determine
         //folder structure from the relative path of the base folder
         if (baseDir && srcFile.indexOf(baseDir) === 0) {
@@ -64,30 +63,34 @@ _self = {
             wrench.mkdirSyncRecursive(path.dirname(fileLocation), "0755");
             fs.writeFileSync(fileLocation, fileBuffer);
         } else {
+            if (!fs.existsSync(destDir)) {
+                wrench.mkdirSyncRecursive(destDir, "0755");
+            }
+
             fs.writeFileSync(path.join(destDir, filename), fileBuffer);
         }
     },
-    
+
     listFiles: function (directory, filter) {
         var files = wrench.readdirSyncRecursive(directory),
             filteredFiles = [];
-        
+
         files.forEach(function (file) {
             //On mac wrench.readdirSyncRecursive does not return absolute paths, so resolve one.
             file = path.resolve(directory, file);
-        
+
             if (filter(file)) {
                 filteredFiles.push(file);
             }
         });
-        
+
         return filteredFiles;
     },
 
     isWindows: function () {
         return os.type().toLowerCase().indexOf("windows") >= 0;
     },
-    
+
     isArray: function (obj) {
         return obj.constructor.toString().indexOf("Array") !== -1;
     },
@@ -99,7 +102,7 @@ _self = {
         }
         return true;
     },
-    
+
     toBoolean: function (myString, defaultVal) {
         // if defaultVal is not passed, default value is undefined
         return myString === "true" ? true : myString === "false" ? false : defaultVal;
@@ -158,20 +161,6 @@ _self = {
 
     loadModule: function (path) {
         return require(path);
-    },
-
-    handleProcessOutput: function (data) {
-        var msg = data.toString().replace(/[\n\r]/g, '');
-
-        if (msg) {
-            if (msg.toLowerCase().indexOf("error:") >= 0) {
-                logger.error(msg);
-            } else if (msg.toLowerCase().indexOf("warn") >= 0) {
-                logger.warn(msg);
-            } else {
-                logger.info(msg);
-            }
-        }
     }
 };
 

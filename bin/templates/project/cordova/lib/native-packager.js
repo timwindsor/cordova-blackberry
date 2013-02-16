@@ -41,14 +41,15 @@ function generateTabletXMLFile(session, config) {
             entryPointType : {
                 _value : "Qnx/WebKit"
             },
+            cascadesTheme : {
+                _value : config.theme
+            },
             initialWindow : {
                 systemChrome : 'none',
                 transparent : 'true',
                 autoOrients : 'true'
             },
-            env : [{
-                _attr : { value : '8', var : 'WEBKIT_NUMBER_OF_BACKINGSTORE_TILES'}
-            }],
+            env : [],
             permission : [{
                 _attr : { system : 'true'},
                 _value : 'run_native'
@@ -58,6 +59,12 @@ function generateTabletXMLFile(session, config) {
                 _value : 'access_internet'
             }]
         };
+
+    // If appdesc is specified, use it as the bar descriptor
+    if (session.appdesc) {
+        pkgrUtils.copyFile(session.appdesc, session.sourceDir);
+        return;
+    }
 
     //Enable slog2 output if debugging
     if (session.debug) {
@@ -197,7 +204,7 @@ function generateOptionsFile(session, target, config) {
     //if -d was provided and we are not signing [-g], set debugToken
     if (session.debug && !isSigning) {
         if (path.extname(conf.DEBUG_TOKEN) === ".bar") {
-            if (path.existsSync(conf.DEBUG_TOKEN)) {
+            if (fs.existsSync(conf.DEBUG_TOKEN)) {
                 debugToken = "-debugToken" + NL;
                 debugToken += conf.DEBUG_TOKEN + NL;
             }
@@ -258,7 +265,7 @@ function execNativePackager(session, callback) {
         script += ".bat";
     }
 
-    if (path.existsSync(conf.DEPENDENCIES_TOOLS)) {
+    if (fs.existsSync(conf.DEPENDENCIES_TOOLS)) {
         nativePkgr = childProcess.spawn(path.normalize(conf.DEPENDENCIES_TOOLS + script), ["@options"], {
             "cwd": cwd,
             "env": process.env

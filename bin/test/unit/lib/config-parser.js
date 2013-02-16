@@ -1,12 +1,13 @@
 var testData = require("./test-data"),
     configParser = require(testData.libPath + "/config-parser"),
+    packagerUtils = require(testData.libPath + "/packager-utils"),
     fileManager = require(testData.libPath + "/file-manager"),
     logger = require(testData.libPath + "./logger"),
     testUtilities = require("./test-utilities"),
     xml2js = require('xml2js'),
     localize = require(testData.libPath + "/localize"),
     path = require("path"),
-    fs = require("fsext"),
+    fs = require("fs"),
     session = testData.session,
     configPath = path.resolve("test/config.xml"),
     configBadPath = path.resolve("test2/config.xml"),
@@ -22,8 +23,8 @@ var testData = require("./test-data"),
 
 describe("config parser", function () {
     beforeEach(function () {
-        spyOn(fs, "copySync");
         spyOn(logger, "warn");
+        spyOn(packagerUtils, "copyFile");
     });
 
     it("tries to open a config.xml file that doesn't exist", function () {
@@ -51,6 +52,7 @@ describe("config parser", function () {
             expect(configObj.permissions).toContain('access_shared');
             expect(configObj.permissions).toContain('read_geolocation');
             expect(configObj.permissions).toContain('use_camera');
+            expect(configObj.enableChildWebView).toBe(false);
             expect(configObj.enableChildWebView).toBe(false);
         });
     });
@@ -125,6 +127,30 @@ describe("config parser", function () {
             expect(configObj.license).toEqual("");
             expect(configObj.licenseURL).toEqual("http://www.apache.org/licenses/LICENSE-2.0");
         });
+    });
+
+    it("fails when id is undefined", function () {
+        var data = testUtilities.cloneObj(testData.xml2jsConfig);
+        data["@"].id = undefined;
+
+        mockParsing(data);
+
+        //Should throw an EXCEPTION_INVALID_ID error
+        expect(function () {
+            configParser.parse(configPath, session, extManager, {});
+        }).toThrow(localize.translate("EXCEPTION_INVALID_ID"));
+    });
+
+    it("fails when id is empty", function () {
+        var data = testUtilities.cloneObj(testData.xml2jsConfig);
+        data["@"].id = "";
+
+        mockParsing(data);
+
+        //Should throw an EXCEPTION_INVALID_ID error
+        expect(function () {
+            configParser.parse(configPath, session, extManager, {});
+        }).toThrow(localize.translate("EXCEPTION_INVALID_ID"));
     });
 
     it("Fails when no name was provided - single element", function () {
@@ -1087,14 +1113,13 @@ describe("config parser", function () {
 
         it("should copy the default icon to the src dir when no icon specified", function () {
             var data = testUtilities.cloneObj(testData.xml2jsConfig);
-
             mockParsing(data);
 
             expect(function () {
                 configParser.parse(configPath, session, extManager, function (configObj) {});
             }).not.toThrow();
 
-            expect(fs.copySync).toHaveBeenCalled();
+            expect(packagerUtils.copyFile).toHaveBeenCalled();
         });
 
         it("should use the default icon config when no icon is specified", function () {
@@ -1312,6 +1337,69 @@ describe("config parser", function () {
             });
         });
 
+        describe('setting theme for some core ui elements', function () {
+            function testTheme(themeInConfig, themeParsed) {
+                var data = testUtilities.cloneObj(testData.xml2jsConfig);
+
+                if (themeInConfig) {
+                    data['feature'] = { '@': { id: 'blackberry.app' },
+                        param: { '@': { name: 'theme', value: themeInConfig } } };
+
+                    mockParsing(data);
+                }
+
+                configParser.parse(configPath, session, extManager, function (configObj) {
+                    expect(configObj.theme).toBe(themeParsed);
+                });
+            }
+
+            it("sets theme to dark when config has theme with dark", function () {
+                testTheme("dark", "dark");
+            });
+
+            it("sets theme to bright when config has theme with bright", function () {
+                testTheme("bright", "bright");
+            });
+
+            it("sets theme to inherit when config has theme with inherit", function () {
+                testTheme("inherit", "inherit");
+            });
+
+            it("sets theme to default when config has theme with default", function () {
+                testTheme("default", "default");
+            });
+
+            it("sets theme to default when config has unsupported theme", function () {
+                testTheme("unsupportedthemename", "default");
+            });
+
+            it("sets theme to default when config has no theme provided", function () {
+                testTheme(undefined, "default");
+            });
+
+            it("sets theme to dark when config has theme with case insensitive dark", function () {
+                testTheme("dArK", "dark");
+            });
+
+            it("sets theme to bright when config has theme with case insensitive bright", function () {
+                testTheme("BriGht", "bright");
+            });
+
+            it("sets theme to inherit when config has theme with case insensitive inherit", function () {
+                testTheme("inHerIt", "inherit");
+            });
+
+            it("sets theme to inherit when config has theme with case insensitive inherit", function () {
+                testTheme("DefAulT", "default");
+            });
+
+            it("sets theme to default when config has NO theme tag provided", function () {
+                configParser.parse(configPath, session, extManager, function (configObj) {
+                    expect(configObj.theme).toBe("default");
+                });
+            });
+        });
+
         describe('disabling WebSecurity', function () {
 
             // { '@': { id: 'blackberry.app', required: true, version: '1.0.0.0' },
@@ -1354,6 +1442,36 @@ describe("config parser", function () {
                 configParser.parse(configPath, session, extManager, function (configObj) {
                     expect(configObj.enableWebSecurity).toBe(false);
                     expect(logger.warn).toHaveBeenCalledWith(localize.translate("WARNING_WEBSECURITY_DISABLED"));
+                });
+            });
+        });
+
+        describe('enabling popupBlocker', function () {
+
+            // { '@': { id: 'blackberry.app', required: true, version: '1.0.0.0' },
+            //   param: { '@': { name: 'childBrowser', value: 'disable' } } }
+
+            it("sets enableWebSecurity to false when value is disable", function () {
+                var data = testUtilities.cloneObj(testData.xml2jsConfig);
+                data.feature = { '@': { id: 'blackberry.app' },
+                    param: { '@': { name: 'popupBlocker', value: 'enable' } } };
+
+                mockParsing(data);
+
+                configParser.parse(configPath, session, extManager, function (configObj) {
+                    expect(configObj.enablePopupBlocker).toBe(true);
+                });
+            });
+
+            it("sets enableWebSecurity to false when value is disable case insensitive", function () {
+                var data = testUtilities.cloneObj(testData.xml2jsConfig);
+                data.feature = { '@': { id: 'blackberry.app' },
+                    param: { '@': { name: 'popupBlocker', value: 'EnAbLe' } } };
+
+                mockParsing(data);
+
+                configParser.parse(configPath, session, extManager, function (configObj) {
+                    expect(configObj.enablePopupBlocker).toBe(true);
                 });
             });
         });

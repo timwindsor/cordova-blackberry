@@ -79,6 +79,9 @@ var Localize = require("localize"),
         "EXCEPTION_INVALID_AUTHOR": {
             "en": "Please enter an author for the application"
         },
+        "EXCEPTION_INVALID_ID": {
+            "en": "Please enter an application id"
+        },
         "EXCEPTION_INVALID_CONTENT": {
             "en": "Invalid config.xml - failed to parse the <content> element(Invalid source or the source is not specified.)"
         },
@@ -149,7 +152,7 @@ var Localize = require("localize"),
             "en": "\"$[1]\" does not exist"
         },
         "EXCEPTION_MISSING_TOOLS": {
-            "en": "BBNDK tools could not be found. Please ensure you have copied the dependencies folder from a WebWorks SDK installation into the root of the repo or have BBDNK installed and the PATH configured via bbndk-env script; Then re-run jake."
+            "en": "BBNDK tools could not be found. Please ensure you have installed the BlackBerry Native SDK [http://developer.blackberry.com/native/] and have the PATH configured via bbndk-env script."
         },
         "EXCEPTION_INVALID_ORIENTATION_MODE": {
             "en": "\"$[1]\" is not a valid orientation mode"
@@ -163,11 +166,11 @@ var Localize = require("localize"),
         "EXCEPTION_CONFIG_NOT_FOUND" : {
             "en": "No config.xml file was found at the root of the .zip file"
         },
-        "EXCEPTION_WEBWORKS_JS_IN_CLIENT_FILES_DIR" : {
-            "en": "$[1] webworks.js files found in Framework/clientFiles"
+        "EXCEPTION_CORDOVA_JS_IN_LIB_DIR" : {
+            "en": "$[1] cordova.js files found in lib"
         },
-        "WARN_WEBWORKS_JS_PACKAGED" : {
-            "en": "webworks.js is now packaged as local:///chrome/webworks.js"
+        "WARN_CORDOVA_JS_PACKAGED" : {
+            "en": "cordova.js is now packaged as local:///chrome/cordova.js"
         },
         "WARN_WEBPLATFORM_JS_PACKAGED" : {
             "en": "webplatform.js has been packaged as an alternative to the on device version"
@@ -177,6 +180,9 @@ var Localize = require("localize"),
         },
         "EXCEPTION_INVALID_ARCHIVE_PATH" : {
             "en": "An archive or directory does not exist at the path specified: \"$[1]\""
+        },
+        "EXCEPTION_APPDESC_NOT_FOUND" : {
+            "en": "The bar descriptor file does not exist at the path specified: \"$[1]\""
         },
         "WARNING_ORIENTATION_DEPRECATED": {
             "en": "blackberry.app.orientation has been deprecated, please use blackberry.app instead"

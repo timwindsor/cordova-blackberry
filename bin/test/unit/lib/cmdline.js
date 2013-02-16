@@ -38,11 +38,16 @@ describe("Command line", function () {
         expect(cmd.debug).toBeTruthy();
     });
 
-    it("accepts -v", function () {
-        cmd.parseOptions(["-v"]);
-        expect(cmd.verbose).toBeTruthy();
+    it("accepts --loglevel with argument", function () {
+        cmd.parseOptions(["--loglevel", "warn"]);
+        expect(cmd.loglevel).toBe("warn");
     });
-    
+
+    it("accepts -ll", function () {
+        cmd.parseOptions(["-ll", "error"]);
+        expect(cmd.loglevel).toBe("error");
+    });
+
     it("accepts -g with argument", function () {
         cmd.parseOptions(["-g", "myPassword"]);
         expect(cmd.password).toEqual("myPassword");
@@ -56,6 +61,11 @@ describe("Command line", function () {
     it("accepts -buildId with argument", function () {
         cmd.parseOptions(["-buildId", "100"]);
         expect(cmd.buildId).toEqual("100");
+    });
+
+    it("accepts --appdesc with argument", function () {
+        cmd.parseOptions(["--appdesc", "bardescriptor"]);
+        expect(cmd.appdesc).toEqual("bardescriptor");
     });
 
     it("throws an error for invalid multi-word arguments", function () {

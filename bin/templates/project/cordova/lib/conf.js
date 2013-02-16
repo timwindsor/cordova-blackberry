@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-var path = require("path");
+var path = require("path"),
+    fs = require("fs");
+
+function getToolsDir() {
+    if (process.env && process.env["QNX_HOST"]) {
+        var bbndkDir = path.join(process.env["QNX_HOST"], "usr");
+        if (fs.existsSync(bbndkDir)) {
+            //BBNDK exists on path, use its tools
+            return bbndkDir;
+        }
+    }
+}
 
 module.exports = {
     ROOT: path.normalize(__dirname + "/../Framework"),
+    PROJECT_ROOT: path.normalize(__dirname + "/../../"),
     BIN: path.normalize(__dirname + "/../Framework/bin"),
     LIB: path.normalize(__dirname + "/../Framework/lib"),
     EXT: path.normalize(__dirname + "/../Framework/ext"),
     UI: path.normalize(__dirname + "/../Framework/ui-resources"),
     DEPENDENCIES: path.normalize(__dirname + "/../Framework/dependencies"),
-    DEPENDENCIES_BOOTSTRAP: path.normalize(__dirname + "/../Framework/dependencies/bootstrap"),
-    DEPENDENCIES_JNEXT: path.normalize(__dirname + "/../Framework/dependencies/jnext"),
-    DEPENDENCIES_TOOLS: path.normalize(__dirname + "/../dependencies/tools"),
+    DEPENDENCIES_BOOTSTRAP: path.normalize(__dirname + "/../Framework/bootstrap"),
+    DEPENDENCIES_TOOLS: getToolsDir(),
     DEPENDENCIES_WWE: path.normalize(__dirname + "/../dependencies/%s-wwe"),
     DEBUG_TOKEN: path.normalize(__dirname + "/../debugtoken.bar"),
     DEFAULT_ICON: path.normalize(__dirname + "/../default-icon.png"),

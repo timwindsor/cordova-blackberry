@@ -51,7 +51,7 @@ describe("Native packager", function () {
         });
         spyOn(fs, "writeFileSync");
         spyOn(childProcess, "spawn").andReturn(result);
-        spyOn(path, "existsSync").andCallFake(function (path) {
+        spyOn(fs, "existsSync").andCallFake(function (path) {
             //Return true if this is the dependencies folder check
             return path.indexOf("dependencies") !== -1;
         });
@@ -122,9 +122,8 @@ describe("Native packager", function () {
             "<asset>abc</asset>" +
             "<asset>xyz</asset>" +
             "<entryPointType>Qnx/WebKit</entryPointType>" +
-            "<initialWindow><systemChrome>none</systemChrome><transparent>true</transparent><autoOrients>true</autoOrients></initialWindow>" +
-            "<env value=\"8\" var=\"WEBKIT_NUMBER_OF_BACKINGSTORE_TILES\"></env>",
-
+            "<cascadesTheme>" + config.theme + "</cascadesTheme>" +
+            "<initialWindow><systemChrome>none</systemChrome><transparent>true</transparent><autoOrients>true</autoOrients></initialWindow>",
             bbTabletXML2 = "<permission system=\"true\">run_native</permission>" +
             "<permission system=\"false\">access_internet</permission>" +
             "<name>" + config.name['default'] + "</name>" +

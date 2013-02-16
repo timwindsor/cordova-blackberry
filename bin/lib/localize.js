@@ -13,26 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var level = 'verbose';
 
-module.exports = {
-    level: function (value) {
-        level = value;
-    },
-    info: function (msg) {
-        if (level === 'verbose') {
-            console.log("[INFO]    " + msg);
+var Localize = require("localize"),
+    loc = new Localize({
+        "SOME_WARNING": {
+            "en": "You have disabled all web security in this WebWorks application"
         }
-    },
-    error: function (msg) {
-        console.log("[ERROR]   " + msg);
-    },
-    warn: function (msg) {
-        if (level !== 'error') {
-            console.log("[WARN]    " + msg);
-        }
-    },
-    log: function (msg) {
-        console.log("[BUILD]   " + msg);
-    }
-};
+    }, "", ""); // TODO maybe a bug in localize, must set default locale to "" in order get it to work
+
+loc.setLocale("en");
+
+module.exports = loc;
