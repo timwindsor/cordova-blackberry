@@ -1,5 +1,5 @@
 {
-    "appname": "www",
-    "ip": "169.254.0.1",
-    "password": "qaqa"
+    "barName": "cordova-BB10-app",
+    "defaultTarget": "",
+    "targets": {}
 }
