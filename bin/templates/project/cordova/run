@@ -1,4 +1,4 @@
 #cd into project dir
 cd $( dirname "$0")/../
 
-node ./cordova/lib/deploy.js "$1"
+node ./cordova/lib/run "$@"
