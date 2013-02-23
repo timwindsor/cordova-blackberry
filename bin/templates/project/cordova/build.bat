@@ -4,7 +4,5 @@ REM cd into project dir
 cd %~dp0\..\
 
 REM package app
-@node.exe ./cordova/lib/bbwp.js ./www -o ./build
+@node.exe ./cordova/lib/build %*
 
-REM run app
-./cordova/run.bat

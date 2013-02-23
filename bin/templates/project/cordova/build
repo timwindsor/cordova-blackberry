@@ -2,7 +2,5 @@
 cd $( dirname "$0")/../
 
 #package app
-node ./cordova/lib/bbwp.js ./www -o ./build
+node ./cordova/lib/build "$@"
 
-#run app
-./cordova/run

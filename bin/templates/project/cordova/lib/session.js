@@ -53,8 +53,9 @@ module.exports = {
         var sourceDir,
             signingPassword,
             outputDir = cmdline.output,
+            properties = require("../../project.json"),
             archivePath = path.resolve(cmdline.args[0]),
-            archiveName = path.basename(archivePath, '.zip'),
+            archiveName = properties.barName ? properties.barName : path.basename(archivePath, '.zip'),
             appdesc,
             buildId = cmdline.buildId;
 
