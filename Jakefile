@@ -88,7 +88,7 @@ task('hint', ['complainwhitespace'], function () {
         return wut;
     };
 
-    childProcess.exec("jshint lib",function(err,stdout,stderr) {
+    childProcess.exec("jshint framework/lib bin/lib bin/test bin/templates/project/cordova bin/templates/project/project.json --config .jshint --extra-ext .json",function(err,stdout,stderr) {
         var exs = stdout.split('\n');
         console.log(exs.filter(filterKnownWarnings).join('\n'));
         complete();

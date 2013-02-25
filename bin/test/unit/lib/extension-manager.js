@@ -1,3 +1,5 @@
+/*jshint sub:true*/
+
 var testData = require("./test-data"),
     fs = require("fs"),
     path = require("path"),

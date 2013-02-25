@@ -19,10 +19,10 @@ function JNEXT_() {
     var self = this;
     var m_bFirstRequire = true;
 
-    self.m_arEvents = new Object();
+    self.m_arEvents = {};
 
     self.onPageLoad = function() {
-    }
+    };
 
     self.attachToDOM = function() {
         // Make sure JNEXT onPageLoad is called when page load
@@ -37,7 +37,7 @@ function JNEXT_() {
                 }
 
                 self.onPageLoad();
-            }
+            };
         }
 
         // Unobtrusively add the JNEXT plugin or ActiveX to the DOM
@@ -59,11 +59,11 @@ function JNEXT_() {
 
         objDiv.innerHTML = strHTML;
         objBody.appendChild(objDiv);
-    }
+    };
 
     self.getosname = function() {
         return objJSExt.sendCmd("osname");
-    }
+    };
 
     self.require = function(strLibrary) {
         // Load a required JNEXT plugin
@@ -90,7 +90,7 @@ function JNEXT_() {
         }
 
         return true;
-    }
+    };
 
     self.createObject = function(strObjName) {
         // Create an instance of a native object
@@ -104,7 +104,7 @@ function JNEXT_() {
             return "";
         }
         return arParams[1];
-    }
+    };
 
     self.invoke = function(strObjId, strMethod, strParams) {
         // Invoke a method of a given instance of a native object
@@ -115,17 +115,17 @@ function JNEXT_() {
         }
 
         return objJSExt.sendCmd(strCmd);
-    }
+    };
 
     self.registerEvents = function(objNotify) {
         var strId = objNotify.getId();
         self.m_arEvents[strId] = objNotify;
-    }
+    };
 
     self.unregisterEvents = function(objNotify) {
         var strId = objNotify.getId();
         delete self.m_arEvents[strId];
-    }
+    };
 
     self.processEvent = function(strNativeEvt) {
         // Process an event received from native code. The event
@@ -145,17 +145,17 @@ function JNEXT_() {
         // This will now be handled by the appropriate JavaScript
         // JNEXT extension object
         objNotify.onEvent(strEvent);
-    }
+    };
 
     self.ajaxGet = function(strUrl, id) {
-        var req = false
+        var req = false;
         if(window.ActiveXObject) {
             try {
-                req = new ActiveXObject("Msxml2.XMLHTTP")
+                req = new ActiveXObject("Msxml2.XMLHTTP");
             } catch (e) {
                 try {
-                    req = new ActiveXObject("Microsoft.XMLHTTP")
-                } catch (e) {
+                    req = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (ex) {
                 }
             }
         } else if(window.XMLHttpRequest) {
@@ -168,15 +168,15 @@ function JNEXT_() {
             if(req.readyState == 4 && (req.status == 200 || window.location.href.indexOf("http") == -1)) {
                 self.onAjaxRecv(req.responseText);
             }
-        }
+        };
 
-        req.open('GET', strUrl, true)
-        req.send(null)
-    }
+        req.open('GET', strUrl, true);
+        req.send(null);
+    };
 
     self.onAjaxRecv = function(strContent) {
         alert(strContent);
-    }
+    };
 
     self.attachToDOM();
 }

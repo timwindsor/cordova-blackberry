@@ -1,3 +1,5 @@
+/*jshint sub:true*/
+
 var testData = require("./test-data"),
     configParser = require(testData.libPath + "/config-parser"),
     packagerUtils = require(testData.libPath + "/packager-utils"),

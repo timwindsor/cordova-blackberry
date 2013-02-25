@@ -65,7 +65,7 @@ try {
 } catch (e) {
     try {
         fileManager.cleanSource(session);
-    } catch (e) {}
+    } catch (ex) {}
 
     logger.error(e);
 }

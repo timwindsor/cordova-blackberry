@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*jshint sub:true*/
 var childProcess = require("child_process"),
     fs = require("fs"),
     path = require("path"),

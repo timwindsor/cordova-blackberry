@@ -18,8 +18,8 @@ var path = require("path"),
     fs = require("fs");
 
 function getToolsDir() {
-    if (process.env && process.env["QNX_HOST"]) {
-        var bbndkDir = path.join(process.env["QNX_HOST"], "usr");
+    if (process.env && process.env.QNX_HOST) {
+        var bbndkDir = path.join(process.env.QNX_HOST, "usr");
         if (fs.existsSync(bbndkDir)) {
             //BBNDK exists on path, use its tools
             return bbndkDir;
