@@ -59,6 +59,11 @@ public final class PluginManager extends Scriptable {
     public static String FIELD_PAUSE = "pause";
 
     /**
+    * Field used to indicate reset of all plugins 
+    */
+    public static String FIELD_RESET = "reset"; 
+    
+    /**
      * Field used to register a Plugin.
      */
     public static String FIELD_ADD_PLUGIN = "addPlugin";
@@ -119,6 +124,15 @@ public final class PluginManager extends Scriptable {
                     return null;
                 }
             };
+        }
+        else if(name.equals(FIELD_RESET)) {
+            final PluginManagerFunction plugin_mgr = this.pluginManagerFunction;
+            return new ScriptableFunction() {
+                public Object invoke(Object obj, Object[] oargs) throws Exception {
+                    plugin_mgr.onReset();
+                    return null;
+                }
+            };            
         }
         else if (name.equals(FIELD_ADD_PLUGIN)) {
             Logger.log("Plugins are now added through the plugins.xml in the application root.");
