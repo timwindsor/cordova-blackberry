@@ -73,6 +73,16 @@ var build,
         fs.renameSync(build_dir + "/" + js_path + "/cordova.blackberry10.js", build_dir + "/" + js_path + "/" + js_basename);
     }
 
+    function updateCordovaJsRefs() {
+        var filePath = project_path + "/www/index.html"
+            data = fs.readFileSync(filePath, "utf8");
+
+        if (data) {
+            //update index.html cordova.js refs to cordova.x.x.x.js
+            fs.writeFileSync(filePath, data.replace(/cordova.js/g, js_basename), "utf8");
+        }
+    }
+
     function copyFilesToProject() {
         // create project using template directory
         wrench.mkdirSyncRecursive(project_path, 0777);
@@ -80,6 +90,9 @@ var build,
 
         // change file permission for cordova scripts because ant copy doesn't preserve file permissions
         wrench.chmodSyncRecursive(project_path + "/cordova", 0700);
+
+        //copy cordova-*version*.js to www
+        utils.copyFile(build_dir + "/" + js_path + "/" + js_basename, project_path + "/www");
 
         //copy node modules to cordova build directory
         wrench.mkdirSyncRecursive(project_path + "/cordova/node_modules", 0777);
@@ -107,7 +120,8 @@ var build,
     build = jWorkflow.order(validate)
                      .andThen(clean)
                      .andThen(copyJavascript)
-                     .andThen(copyFilesToProject);
+                     .andThen(copyFilesToProject)
+                     .andThen(updateCordovaJsRefs);
 
     build.start(function (error) {
         done(error);

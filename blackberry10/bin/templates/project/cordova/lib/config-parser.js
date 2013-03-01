@@ -539,6 +539,13 @@ function processNameAndDescription(data, widgetConfig) {
     processLocalizedText('description', data, widgetConfig);
 }
 
+function processCordovaPreferences(data, widgetConfig) {
+    if (data.preferences) {
+        var preferences = processParamObj(data.preferences);
+        widgetConfig.packageCordovaJs = preferences.packageCordovaJs === "enable";
+    }
+}
+
 function processResult(data, session, extManager) {
     var widgetConfig = {};
 
@@ -551,6 +558,7 @@ function processResult(data, session, extManager) {
     processInvokeTargetsData(data, widgetConfig);
     processSplashScreenData(data, widgetConfig);
     processNameAndDescription(data, widgetConfig);
+    processCordovaPreferences(data, widgetConfig);
 
     widgetConfig.configXML = "config.xml";
 

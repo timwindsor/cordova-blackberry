@@ -36,7 +36,12 @@ function buildTarget(previous, baton) {
     //Copy target dependent files
     fileManager.copyWWE(this.session, target);
     fileManager.copyWebplatform(this.session, target);
-    fileManager.copyWebworks(this.session);
+
+    if (config.packageCordovaJs) {
+        //Package cordova.js to chrome folder
+        fileManager.copyWebworks(this.session);
+    }
+
     fileManager.copyJnextDependencies(this.session);
     fileManager.copyExtensions(this.config.accessList, this.session, target, this.extManager);
 

@@ -78,8 +78,7 @@ function copyDirContents(from, to) {
 
 function prepare(session) {
     var conf = session.conf,
-        dest = session.sourcePaths,
-        cordovaJsFiles;
+        dest = session.sourcePaths;
 
     if (fs.existsSync(session.sourceDir)) {
         wrench.rmdirSyncRecursive(session.sourceDir);
@@ -116,14 +115,6 @@ function prepare(session) {
         }
     } else {
         throw localize.translate("EXCEPTION_INVALID_ARCHIVE_PATH", session.archivePath);
-    }
-
-    //test for existing cordova.js files
-    cordovaJsFiles = packagerUtils.listFiles(session.sourceDir, function (file) {
-        return CORDOVA_JS_REGEX.test(file);
-    });
-    if (cordovaJsFiles.length > 0) {
-        logger.warn(localize.translate("WARN_CORDOVA_JS_PACKAGED"));
     }
 }
 

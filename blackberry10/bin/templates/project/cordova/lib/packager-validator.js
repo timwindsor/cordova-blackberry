@@ -20,6 +20,8 @@ var check = require('validator').check,
     signingHelper = require("./signing-helper"),
     path = require("path"),
     fs = require("fs"),
+    packagerUtils = require("./packager-utils"),
+    CORDOVA_JS_REGEX = /(cordova-.+js)|cordova\.js/,
     _self;
 
 //NOTE this class is unfinished and is a work in progress
@@ -103,13 +105,25 @@ _self = {
                 }
 
                 return true;
-            };
+            },
+            cordovaJsFiles;
 
         configObj.accessList.forEach(function (access) {
             if (access.hasOwnProperty("features")) {
                 access.features = access.features.filter(isValid);
             }
         });
+
+        //if packageCordovaJs was set, test for existing cordova.js files
+        if (configObj.packageCordovaJs) {
+            cordovaJsFiles = packagerUtils.listFiles(session.sourceDir, function (file) {
+                return CORDOVA_JS_REGEX.test(file);
+            });
+            if (cordovaJsFiles.length > 0) {
+                logger.warn(localize.translate("WARN_CORDOVA_JS_PACKAGED"));
+            }
+        }
+
     }
 };
 
