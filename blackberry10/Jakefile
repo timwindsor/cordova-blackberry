@@ -65,9 +65,9 @@ function forEachFile(root, cbFile, cbDone) {
 desc("runs test");
 task('default', ['hint','test'], function () {});
 
-desc("run all tests in node - jake test [path,path2]");
+desc("run all tests in node - jake test [path]");
 task('test', [], function () {
-    require('./framework/scripts/test')(null, process.argv.length >= 4 ? process.argv[3] : null);
+    require('./scripts/test')(null, process.argv.length >= 4 ? process.argv[3] : null);
 });
 
 desc('check sources with JSHint');

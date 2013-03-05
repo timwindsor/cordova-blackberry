@@ -102,7 +102,7 @@ var build,
             process.exit(1);
         }
         else {
-            console.log("Project creation complete!\n");
+            console.log("Project creation complete!");
             process.exit();
         }
     }

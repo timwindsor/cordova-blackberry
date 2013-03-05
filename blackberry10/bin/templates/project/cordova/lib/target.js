@@ -76,10 +76,9 @@ function isValidPin(pin) {
 }
 
 commander
-    commander
     .usage('[command] [params]')
     .option('-p, --password <password>', 'Specifies password for this target')
-    .option('--pin <devicepin>', 'Specifies PIN for this device')
+    .option('--pin <devicepin>', 'Specifies PIN for this device');
 
 commander
     .on('--help', function () {
@@ -102,10 +101,10 @@ commander
         ip = commander.args[1];
         type = commander.args[2];
         if (commander.password && typeof commander.password === 'string') {
-            password = commander.password
+            password = commander.password;
         }
         if (commander.pin && typeof commander.pin === 'string') {
-            pin = commander.pin
+            pin = commander.pin;
         }
         if (!isValidIp(ip)) {
             throw "Invalid IP: " + ip;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 Research In Motion Limited.
+ *  Copyright 2013 Research In Motion Limited.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,42 @@
  */
 
 var wrench = require('wrench'),
-    jWorkflow = require('jWorkflow'),
     path = require('path'),
-    utils = require('./lib/utils'),
-    _c = require('./lib/conf');
+    fs = require('fs');
 
 module.exports = function (done, custom) {
     var jasmine = require('jasmine-node'),
         verbose = false,
-        colored = false,
-        specs = path.join(_c.TEMP, (custom ? custom : "test/unit")),
-        key,
-        test;
+        coloured = false,
+        specs = [
+            "framework/test",
+            "bin/test/cordova/integration"
+        ];
+        key = {};
+
+    if (typeof custom !== "undefined" && fs.existsSync(custom)) {
+        specs = [custom];
+    }
 
     for (key in jasmine) {
         if (Object.prototype.hasOwnProperty.call(jasmine, key)) {
             global[key] = jasmine[key];
         }
     }
-    utils.copyFolder(path.join(_c.ROOT, "lib"), path.join(_c.TEMP, "lib"));
-    utils.copyFolder(path.join(_c.ROOT, "test"), path.join(_c.TEMP, "test"));
 
-    test = jWorkflow.order();
-    test.start(function (code) {
-        jasmine.executeSpecsInFolder(specs, function (runner, log) {
-            wrench.rmdirSyncRecursive(_c.TEMP, true);
-            var failed = runner.results().failedCount === 0 ? 0 : 1;
-            setTimeout(function () {
-                (typeof done !== "function" ? process.exit : done)(failed);
-            }, 10);
+    function execSpecs(folders) {
+        var failed = 0;
+        if (folders.length > 0) {
+            console.log("Running tests in: " + folders[folders.length - 1]);
+            jasmine.executeSpecsInFolder(path.resolve(folders.pop()), function (runner) {
+                execSpecs(folders);
+                failed = runner.results().failedcount === 0 ? 0 : 1;
+            }, verbose, coloured);
+        }
+        else {
+            (typeof done !== "function" ? process.exit : done)(failed);
+        }
+    }
 
-        }, verbose, colored);
-    });
-
+    execSpecs(specs);
 };
