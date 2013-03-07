@@ -73,16 +73,6 @@ var build,
         fs.renameSync(build_dir + "/" + js_path + "/cordova.blackberry10.js", build_dir + "/" + js_path + "/" + js_basename);
     }
 
-    function updateCordovaJsRefs() {
-        var filePath = project_path + "/www/index.html"
-            data = fs.readFileSync(filePath, "utf8");
-
-        if (data) {
-            //update index.html cordova.js refs to cordova.x.x.x.js
-            fs.writeFileSync(filePath, data.replace(/cordova.js/g, js_basename), "utf8");
-        }
-    }
-
     function copyFilesToProject() {
         // create project using template directory
         wrench.mkdirSyncRecursive(project_path, 0777);
@@ -120,8 +110,7 @@ var build,
     build = jWorkflow.order(validate)
                      .andThen(clean)
                      .andThen(copyJavascript)
-                     .andThen(copyFilesToProject)
-                     .andThen(updateCordovaJsRefs);
+                     .andThen(copyFilesToProject);
 
     build.start(function (error) {
         done(error);
