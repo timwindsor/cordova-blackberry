@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit 5d05de4ce3bde852020f933f2e61a64da62f66a8
+// commit d68ba44bf4980f8a2a7ab60c98a6851a7f767bc5
 
-// File generated at :: Thu Mar 14 2013 16:49:59 GMT-0400 (EDT)
+// File generated at :: Mon Mar 18 2013 14:38:01 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -5120,6 +5120,21 @@ module.exports = {
 // file: lib/blackberry10/plugin/blackberry10/pluginUtils.js
 define("cordova/plugin/blackberry10/pluginUtils", function(require, exports, module) {
 
+function build(plugins) {
+    var builder = require('cordova/builder'),
+        plugin;
+    for (plugin in plugins) {
+        if (plugins.hasOwnProperty(plugin)) {
+            if (plugins[plugin].clobbers) {
+                builder.buildIntoAndClobber(plugins[plugin].clobbers, window);
+            }
+            if (plugins[plugin].merges) {
+                builder.buildIntoAndMerge(plugins[plugin].merges, window);
+            }
+        }
+    }
+}
+
 module.exports = {
 
     loadClientJs: function (plugins, callback) {
@@ -5134,6 +5149,7 @@ module.exports = {
                     script.src = 'plugins/' + plugin + '/' + plugins[plugin].modules[i];
                     script.onload = function () {
                         if (--count === 0 && typeof callback === 'function') {
+                            build(plugins);
                             callback();
                         }
                     };
