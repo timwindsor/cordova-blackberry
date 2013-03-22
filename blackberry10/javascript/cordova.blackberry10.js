@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit 81a30b465c3f84cc020dda5a7ede6e83a8e44385
+// commit 3d15f7934685acd31adda8a7f6f314188b3a479d
 
-// File generated at :: Tue Mar 19 2013 13:22:52 GMT-0400 (EDT)
+// File generated at :: Fri Mar 22 2013 11:40:27 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -5120,7 +5120,7 @@ module.exports = {
         var request,
             response;
         request = new XMLHttpRequest();
-        request.open('GET', 'plugins/plugins.json', true);
+        request.open('GET', 'local:///plugins/plugins.json', true);
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
                 if (request.status === 200) {
