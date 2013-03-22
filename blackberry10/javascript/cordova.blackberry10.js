@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit 3d15f7934685acd31adda8a7f6f314188b3a479d
+// commit 2803a4b6c863fc82884dff06cf915e655bc773dd
 
-// File generated at :: Fri Mar 22 2013 11:40:27 GMT-0400 (EDT)
+// File generated at :: Fri Mar 22 2013 16:34:35 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -5102,7 +5102,7 @@ module.exports = {
             if (plugins.hasOwnProperty(plugin) && plugins[plugin].modules) {
                 for (i = 0; i < plugins[plugin].modules.length; i++) {
                     script = document.createElement('script');
-                    script.src = 'plugins/' + plugin + '/' + plugins[plugin].modules[i];
+                    script.src = 'local:///plugins/' + plugin + '/' + plugins[plugin].modules[i];
                     script.onload = function () {
                         if (--count === 0 && typeof callback === 'function') {
                             build(plugins);
