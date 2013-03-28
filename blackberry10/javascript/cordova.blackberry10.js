@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit b468b348268544e518d6d03470e2b21e81a610b9
+// commit 4c7d302ca09258a6ab9306e7647b1478b06c498a
 
-// File generated at :: Mon Apr 01 2013 08:57:54 GMT-0400 (EDT)
+// File generated at :: Mon Apr 01 2013 10:04:19 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -951,13 +951,10 @@ var cordova = require('cordova'),
     plugins = {
         'Accelerometer' : require('cordova/plugin/blackberry10/accelerometer'),
         'Compass' : require('cordova/plugin/blackberry10/magnetometer'),
-        'Camera' : require('cordova/plugin/blackberry10/camera'),
         'Capture' : require('cordova/plugin/blackberry10/capture'),
         'Logger' : require('cordova/plugin/blackberry10/logger'),
         'Notification' : require('cordova/plugin/blackberry10/notification'),
         'Media': require('cordova/plugin/blackberry10/media'),
-        'File' : require('cordova/plugin/blackberry10/file'),
-        'InAppBrowser' : require('cordova/plugin/blackberry10/InAppBrowser'),
         'FileTransfer': require('cordova/plugin/blackberry10/fileTransfer')
     };
 
@@ -3869,23 +3866,6 @@ module.exports = {
     stop: function (args, win, fail) {
         window.removeEventListener("devicemotion", callback);
         return { "status" : cordova.callbackStatus.OK, "message" : "removed" };
-    }
-};
-
-});
-
-// file: lib/blackberry10/plugin/blackberry10/camera.js
-define("cordova/plugin/blackberry10/camera", function(require, exports, module) {
-
-var cordova = require('cordova');
-
-module.exports = {
-    takePicture: function (args, win, fail) {
-        var noop = function () {};
-        blackberry.invoke.card.invokeCamera("photo", function (path) {
-            win("file://" + path);
-        }, noop, noop);
-        return { "status" : cordova.callbackStatus.NO_RESULT, "message" : "WebWorks Is On It" };
     }
 };
 
