@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit ed2bd3f6d7b95545687810bc373444f0764fa543
+// commit b468b348268544e518d6d03470e2b21e81a610b9
 
-// File generated at :: Thu Mar 28 2013 15:37:18 GMT-0400 (EDT)
+// File generated at :: Mon Apr 01 2013 08:57:54 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -956,6 +956,8 @@ var cordova = require('cordova'),
         'Logger' : require('cordova/plugin/blackberry10/logger'),
         'Notification' : require('cordova/plugin/blackberry10/notification'),
         'Media': require('cordova/plugin/blackberry10/media'),
+        'File' : require('cordova/plugin/blackberry10/file'),
+        'InAppBrowser' : require('cordova/plugin/blackberry10/InAppBrowser'),
         'FileTransfer': require('cordova/plugin/blackberry10/fileTransfer')
     };
 
@@ -978,83 +980,6 @@ module.exports = function (success, fail, service, action, args) {
         return plugins[service][action](args, success, fail);
     }
     return webworks.exec(success, fail, service, action, args);
-};
-
-function RemoteFunctionCall(functionUri) {
-     var params = {};
-
-    function composeUri() {
-        return require("cordova/plugin/blackberry10/utils").getURIPrefix() + functionUri;
-    }
-
-    function createXhrRequest(uri, isAsync) {
-        var request = new XMLHttpRequest();
-        request.open("POST", uri, isAsync);
-        request.setRequestHeader("Content-Type", "application/json");
-        return request;
-    }
-
-    this.addParam = function (name, value) {
-        params[name] = encodeURIComponent(JSON.stringify(value));
-    };
-
-    this.makeSyncCall = function (success, error) {
-        var requestUri = composeUri(),
-            request = createXhrRequest(requestUri, false),
-            response,
-            errored,
-            cb,
-            data;
-
-        request.send(JSON.stringify(params));
-        response = JSON.parse(decodeURIComponent(request.responseText) || "null");
-        return response;
-    };
-}
-
-window.webworks = {
-    exec: function (success, fail, service, action, args) {
-        var uri = service + "/" + action,
-            request = new RemoteFunctionCall(uri),
-            callbackId = service + cordova.callbackId++,
-            response,
-            name,
-            didSucceed;
-
-        for (name in args) {
-            if (Object.hasOwnProperty.call(args, name)) {
-                request.addParam(name, args[name]);
-            }
-        }
-
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
-        request.addParam("callbackId", callbackId);
-
-        response = request.makeSyncCall();
-
-        //Old WebWorks Extension success
-        if (response.code === 42) {
-            if (success) {
-                success(response.data, response);
-            }
-            delete cordova.callbacks[callbackId];
-        } else if (response.code < 0) {
-            if (fail) {
-                fail(response.msg, response);
-            }
-            delete cordova.callbacks[callbackId];
-        } else {
-            didSucceed = response.code === cordova.callbackStatus.OK || response.code === cordova.callbackStatus.NO_RESULT;
-            cordova.callbackFromNative(callbackId, didSucceed, response.code, didSucceed ? response.data : response.msg, !!response.keepCallback);
-        }
-    },
-    defineReadOnlyField: function (obj, field, value) {
-        Object.defineProperty(obj, field, {
-            "value": value,
-            "writable": false
-        });
-    },
-    event: require("cordova/plugin/blackberry10/event")
 };
 
 });
@@ -7573,6 +7498,83 @@ window.cordova = require('cordova');
             listenerRegistered = true;
             fireWebworksReadyEvent();
         }
+    };
+
+    function RemoteFunctionCall(functionUri) {
+        var params = {};
+
+        function composeUri() {
+            return require("cordova/plugin/blackberry10/utils").getURIPrefix() + functionUri;
+        }
+
+        function createXhrRequest(uri, isAsync) {
+            var request = new XMLHttpRequest();
+            request.open("POST", uri, isAsync);
+            request.setRequestHeader("Content-Type", "application/json");
+            return request;
+        }
+
+        this.addParam = function (name, value) {
+            params[name] = encodeURIComponent(JSON.stringify(value));
+        };
+
+        this.makeSyncCall = function (success, error) {
+            var requestUri = composeUri(),
+            request = createXhrRequest(requestUri, false),
+            response,
+            errored,
+            cb,
+            data;
+
+            request.send(JSON.stringify(params));
+            response = JSON.parse(decodeURIComponent(request.responseText) || "null");
+            return response;
+        };
+    }
+
+    window.webworks = {
+        exec: function (success, fail, service, action, args) {
+            var uri = service + "/" + action,
+            request = new RemoteFunctionCall(uri),
+            callbackId = service + cordova.callbackId++,
+            response,
+            name,
+            didSucceed;
+
+            for (name in args) {
+                if (Object.hasOwnProperty.call(args, name)) {
+                    request.addParam(name, args[name]);
+                }
+            }
+
+            cordova.callbacks[callbackId] = {success:success, fail:fail};
+            request.addParam("callbackId", callbackId);
+
+            response = request.makeSyncCall();
+
+            //Old WebWorks Extension success
+            if (response.code === 42) {
+                if (success) {
+                    success(response.data, response);
+                }
+                delete cordova.callbacks[callbackId];
+            } else if (response.code < 0) {
+                if (fail) {
+                    fail(response.msg, response);
+                }
+                delete cordova.callbacks[callbackId];
+            } else {
+                didSucceed = response.code === cordova.callbackStatus.OK || response.code === cordova.callbackStatus.NO_RESULT;
+                cordova.callbackFromNative(callbackId, didSucceed, response.code, didSucceed ? response.data : response.msg, !!response.keepCallback);
+            }
+        },
+        defineReadOnlyField: function (obj, field, value) {
+            Object.defineProperty(obj, field, {
+                "value": value,
+                "writable": false
+            });
+        },
+        event: require("cordova/plugin/blackberry10/event")
     };
 
     //Fire webworks ready once plugin javascript has been loaded
