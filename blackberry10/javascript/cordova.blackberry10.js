@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit d07ec25ed9e0adf6b5d8e1a8508497d89b07657d
+// commit 3608b939951f453d699df4f86c8de3a26e25bd12
 
-// File generated at :: Mon Apr 01 2013 13:43:40 GMT-0400 (EDT)
+// File generated at :: Tue Apr 02 2013 16:03:40 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -952,7 +952,6 @@ var cordova = require('cordova'),
         'Accelerometer' : require('cordova/plugin/blackberry10/accelerometer'),
         'Compass' : require('cordova/plugin/blackberry10/magnetometer'),
         'Capture' : require('cordova/plugin/blackberry10/capture'),
-        'Logger' : require('cordova/plugin/blackberry10/logger'),
         'Notification' : require('cordova/plugin/blackberry10/notification'),
         'Media': require('cordova/plugin/blackberry10/media'),
         'FileTransfer': require('cordova/plugin/blackberry10/fileTransfer')
@@ -4665,21 +4664,6 @@ module.exports = {
 
 });
 
-// file: lib/blackberry10/plugin/blackberry10/logger.js
-define("cordova/plugin/blackberry10/logger", function(require, exports, module) {
-
-var cordova = require('cordova');
-
-module.exports = {
-    log: function (args, win, fail) {
-        console.log(args);
-        return {"status" : cordova.callbackStatus.OK,
-                "message" : 'Message logged to console: ' + args};
-    }
-};
-
-});
-
 // file: lib/blackberry10/plugin/blackberry10/magnetometer.js
 define("cordova/plugin/blackberry10/magnetometer", function(require, exports, module) {
 
@@ -4949,9 +4933,6 @@ module.exports = {
         });
     },
     clobbers: {
-        open: {
-            path: "cordova/plugin/InAppBrowser"
-        },
         requestFileSystem: {
             path: "cordova/plugin/blackberry10/requestFileSystem"
         }
