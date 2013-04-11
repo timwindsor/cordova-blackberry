@@ -1,8 +1,8 @@
 // Platform: blackberry10
 
-// commit f9ac2930aa892422deff2be5a3b3b8f5e8f7edc0
+// commit c8e2a018e93036393bcf5e0edd855187e5c587c5
 
-// File generated at :: Mon Apr 08 2013 15:58:16 GMT-0400 (EDT)
+// File generated at :: Thu Apr 11 2013 15:50:01 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -31,17 +31,28 @@ var require,
     define;
 
 (function () {
-    var modules = {};
+    var modules = {},
     // Stack of moduleIds currently being built.
-    var requireStack = [];
+        requireStack = [],
     // Map of module ID -> index into requireStack of modules currently being built.
-    var inProgressModules = {};
+        inProgressModules = {},
+        SEPERATOR = ".";
+
+
 
     function build(module) {
-        var factory = module.factory;
+        var factory = module.factory,
+            localRequire = function (id) {
+                var resultantId = id;
+                //Its a relative path, so lop off the last portion and add the id (minus "./")
+                if (id.charAt(0) === ".") {
+                    resultantId = module.id.slice(0, module.id.lastIndexOf(SEPERATOR)) + SEPERATOR + id.slice(2);
+                }
+                return require(resultantId);
+            };
         module.exports = {};
         delete module.factory;
-        factory(require, module.exports, module);
+        factory(localRequire, module.exports, module);
         return module.exports;
     }
 
