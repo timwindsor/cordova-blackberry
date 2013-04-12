@@ -28,19 +28,50 @@ module.exports = {
     }
 }
 
-JNEXT.PimContacts = function () {
+///////////////////////////////////////////////////////////////////
+// JavaScript wrapper for JNEXT plugin
+///////////////////////////////////////////////////////////////////
+
+JNEXT.PimContacts = function ()
+{
     var self = this,
         hasInstance = false;
+
+    self.find = function (args) {
+        JNEXT.invoke(self.m_id, "find " + JSON.stringify(args));
+        return "";
+    };
+
+    self.save = function (args) {
+        JNEXT.invoke(self.m_id, "save " + JSON.stringify(args));
+        return "";
+    };
+
+    self.remove = function (args) {
+        JNEXT.invoke(self.m_id, "remove " + JSON.stringify(args));
+        return "";
+    };
+
+    self.getId = function () {
+        return self.m_id;
+    };
+
+    self.getContactAccounts = function () {
+        var value = JNEXT.invoke(self.m_id, "getContactAccounts");
+        return JSON.parse(value);
+    };
 
     self.init = function () {
         if (!JNEXT.require("libpimcontacts")) {
             return false;
         }
+
         self.m_id = JNEXT.createObject("libpimcontacts.PimContacts");
 
-        if (self.m_id == "") {
+        if (self.m_id === "") {
             return false;
         }
+
         JNEXT.registerEvents(self);
     };
 
@@ -52,8 +83,7 @@ JNEXT.PimContacts = function () {
             hasInstance = true;
         }
         return self;
-    }
-
+    };
 };
 
 pimContacts = new JNEXT.PimContacts();
