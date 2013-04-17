@@ -73,9 +73,43 @@ module.exports = {
         success();
     },
     save: function (successCb, failCb, args, env) {
-        noop();
+        console.log("Contacts save");
+        var attributes = {},
+            cordovaAttributes = {},
+            result,
+            key;
+
+        for (key in args) {
+            if (args.hasOwnProperty(key)) {
+                cordovaAttributes[key] = JSON.parse(decodeURIComponent(args[key]));
+            }
+        }
+        attributes = cordovaAttributes[0];
+
+        //convert birthday format for our native .so file
+        if (attributes.birthday) {
+            attributes.birthday = new Date(attributes.birthday).toDateString();
+        }
+
+        attributes["_eventId"] = cordovaAttributes.callbackId;
+        result = new PluginResult(args, env);
+        pimContacts.getInstance().save(attributes, result);
+        result.noResult(true);
     },
     remove: function (successCb, failCb, args, env) {
+        console.log("Contacts remove");
+        var attributes = {},
+            result,
+            key;
+
+        for (key in args) {
+            if (args.hasOwnProperty(key)) {
+                attributes[key] = JSON.parse(decodeURIComponent(args[key]));
+            }
+        }
+        result = new PluginResult();
+        pimContacts.getInstance().remove(attributes, result);
+
         noop();
     }
 }
@@ -98,12 +132,13 @@ JNEXT.PimContacts = function ()
         return JSON.parse(JNEXT.invoke(self.m_id, "getContact " + JSON.stringify(args)));
     };
 
-    self.save = function (args) {
+    self.save = function (args, pluginResult) {
+        self.eventHandlers[args._eventId] = pluginResult;
         JNEXT.invoke(self.m_id, "save " + JSON.stringify(args));
         return "";
     };
 
-    self.remove = function (args) {
+    self.remove = function (args, pluginResult) {
         JNEXT.invoke(self.m_id, "remove " + JSON.stringify(args));
         return "";
     };
@@ -138,12 +173,12 @@ JNEXT.PimContacts = function ()
 
         if (strEventDesc === "result") {
             args.result = escape(strData.split(" ").slice(2).join(" "));
-            // TODO: replace _event with PluginResult
-            //_event.trigger(arData[1], args);
+            self.eventHandlers[arData[1]].callbackOk(JSON.parse(decodeURIComponent(args.result)), false);
         }
     };
 
     self.m_id = "";
+    self.eventHandlers = {};
 
     self.getInstance = function () {
         if (!hasInstance) {
