@@ -84,6 +84,20 @@ function populateFilter(filter, field, value) {
     // ContactFindOptions.SEARCH_FIELD_VIDEO_CHAT
 }
 
+function processJnextSaveData(result, JnextData) {
+    var data = JnextData;
+        birthdayInfo = data.birthday.split("-");
+
+    //Convert date string from native to milliseconds since epoch for cordova-js
+    data.birthday = new Date();
+    data.birthday.setYear(birthdayInfo[0]);
+    data.birthday.setMonth(birthdayInfo[1] - 1);
+    data.birthday.setDate(birthdayInfo[2]);
+    data.birthday = data.birthday.getTime();
+
+    result.callbackOk(data, false);
+}
+
 module.exports = {
     search: function (successCb, failCb, args, env) {
         console.log("search is called");
@@ -145,7 +159,7 @@ module.exports = {
             attributes.birthday = new Date(attributes.birthday).toDateString();
         }
 
-        attributes["_eventId"] = cordovaAttributes.callbackId;
+        attributes._eventId = cordovaAttributes.callbackId;
         pimContacts.getInstance().save(attributes, result);
         result.noResult(true);
     },
@@ -164,7 +178,7 @@ module.exports = {
             result.noResult(false);
         }
     }
-}
+};
 
 ///////////////////////////////////////////////////////////////////
 // JavaScript wrapper for JNEXT plugin
@@ -185,8 +199,12 @@ JNEXT.PimContacts = function ()
         return JSON.parse(JNEXT.invoke(self.m_id, "getContact " + JSON.stringify(args)));
     };
 
-    self.save = function (args, pluginResult) {
-        self.eventHandlers[args._eventId] = pluginResult;
+    self.save = function (args, pluginResult, handler) {
+        self.eventHandlers[args._eventId] = {
+            "result" : pluginResult,
+            "action" : "save",
+            "handler" : handler
+        };
         JNEXT.invoke(self.m_id, "save " + JSON.stringify(args));
         return "";
     };
@@ -223,11 +241,17 @@ JNEXT.PimContacts = function ()
     self.onEvent = function (strData) {
         var arData = strData.split(" "),
             strEventDesc = arData[0],
+            callbackInfo,
             args = {};
 
         if (strEventDesc === "result") {
             args.result = escape(strData.split(" ").slice(2).join(" "));
-            self.eventHandlers[arData[1]].callbackOk(JSON.parse(decodeURIComponent(args.result)), false);
+            callbackInfo = self.eventHandlers[arData[1]];
+            if (callbackInfo.action === "save") {
+                callbackInfo.handler(callbackInfo.result, JSON.parse(decodeURIComponent(args.result)));
+            } else {
+                callbackInfo.result.callbackOk(JSON.parse(decodeURIComponent(args.result)));
+            }
         }
     };
 
