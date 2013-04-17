@@ -160,7 +160,7 @@ module.exports = {
         }
 
         attributes._eventId = cordovaAttributes.callbackId;
-        pimContacts.getInstance().save(attributes, result);
+        pimContacts.getInstance().save(attributes, result, processJnextSaveData);
         result.noResult(true);
     },
     remove: function (successCb, failCb, args, env) {
