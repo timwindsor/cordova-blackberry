@@ -39,6 +39,7 @@ module.exports = {
         debugger;
         var findOptions = {},
             cordovaFindOptions = {},
+            result,
             key;
 
         for (key in args) {
@@ -47,30 +48,26 @@ module.exports = {
             }
         }
 
-        findOptions._eventId = "NoEventFromCordova";
+        result = new PluginResult(args, env);
+        findOptions._eventId = cordovaFindOptions.callbackId;
         findOptions.fields = cordovaFindOptions[0];
         findOptions.options = cordovaFindOptions[1];
 
-        //if (!checkPermission(success, findOptions["_eventId"])) {
-        //    return;
-        //}
-
         if (!contactUtils.validateFindArguments(findOptions.options)) {
-            // TODO: replace _event with PluginResult
-            //_event.trigger(findOptions._eventId, {
-            //    "result": escape(JSON.stringify({
-            //        "_success": false,
-            //        "code": ContactError.INVALID_ARGUMENT_ERROR
-            //    }))
-            //});
-            success();
+            result.callbackError({
+                "result": escape(JSON.stringify({
+                    "_success": false,
+                    "code": ContactError.INVALID_ARGUMENT_ERROR
+                }))
+            });
+            result.noResult(true);
             return;
         }
 
         getAccountFilters(findOptions.options);
-        pimContacts.getInstance().find(findOptions);
+        pimContacts.getInstance().find(findOptions, result);
 
-        success();
+        result.noResult(true);;
     },
     save: function (successCb, failCb, args, env) {
         console.log("Contacts save");
@@ -98,19 +95,31 @@ module.exports = {
     },
     remove: function (successCb, failCb, args, env) {
         console.log("Contacts remove");
-        var attributes = {},
+        var cordovaAttributes = {},
+            attributes = {},
             result,
-            key;
+            key,
+            contactId;
 
         for (key in args) {
             if (args.hasOwnProperty(key)) {
-                attributes[key] = JSON.parse(decodeURIComponent(args[key]));
+                cordovaAttributes[key] = JSON.parse(decodeURIComponent(args[key]));
             }
         }
-        result = new PluginResult();
-        pimContacts.getInstance().remove(attributes, result);
 
-        noop();
+        result = new PluginResult(args, env);
+
+        contactId = window.parseInt(cordovaAttributes[0]);
+        if (!window.isNaN(contactId)) {
+            attributes = { "contactId" : contactId,
+                           "_eventId" : cordovaAttributes.callbackId};
+
+            pimContacts.getInstance().remove(attributes, result);
+
+        } else {
+            result.callbackError(ContactError.UNKNOWN_ERROR);
+        }
+        result.noResult(true);
     }
 }
 
@@ -123,7 +132,8 @@ JNEXT.PimContacts = function ()
     var self = this,
         hasInstance = false;
 
-    self.find = function (args) {
+    self.find = function (args, pluginResult) {
+        self.eventHandlers[args._eventId] = pluginResult;
         JNEXT.invoke(self.m_id, "find " + JSON.stringify(args));
         return "";
     };
@@ -139,6 +149,7 @@ JNEXT.PimContacts = function ()
     };
 
     self.remove = function (args, pluginResult) {
+        self.eventHandlers[args._eventId] = pluginResult;
         JNEXT.invoke(self.m_id, "remove " + JSON.stringify(args));
         return "";
     };
