@@ -17,6 +17,7 @@ var pimContacts,
     contactUtils = require("./contactUtils"),
     contactConsts = require("./contactConsts"),
     ContactError = require("./ContactError"),
+    ContactFindOptions = require("./ContactFindOptions"),
     noop = function () {};
 
 function getAccountFilters(options) {
@@ -33,6 +34,56 @@ function getAccountFilters(options) {
     }
 }
 
+function populateFilter(filter, field, value) {
+    if (field === "displayName" || field === "name") {
+        filter.push({
+            "fieldName" : ContactFindOptions.SEARCH_FIELD_GIVEN_NAME,
+            "fieldValue" : value
+        });
+
+        filter.push({
+            "fieldName" : ContactFindOptions.SEARCH_FIELD_FAMILY_NAME,
+            "fieldValue" : value
+        });
+    } else if (field === "nickname") {
+        // not supported by Cascades
+    } else if (field === "phoneNumbers") {
+        filter.push({
+            "fieldName" : ContactFindOptions.SEARCH_FIELD_PHONE,
+            "fieldValue" : value
+        });
+    } else if (field === "emails") {
+        filter.push({
+            "fieldName" : ContactFindOptions.SEARCH_FIELD_EMAIL,
+            "fieldValue" : value
+        });
+    } else if (field === "addresses") {
+        // not supported by Cascades
+    } else if (field === "ims") {
+        // not supported by Cascades
+    } else if (field === "organizations") {
+        filter.push({
+            "fieldName" : ContactFindOptions.SEARCH_FIELD_ORGANIZATION_NAME,
+            "fieldValue" : value
+        });
+    } else if (field === "birthday") {
+        // not supported by Cascades
+    } else if (field === "note") {
+        // not supported by Cascades
+    } else if (field === "photos") {
+        // not supported by Cascades
+    } else if (field === "categories") {
+        // not supported by Cascades
+    } else if (field === "urls") {
+        // not supported by Cascades
+    }
+    // More fields supported by Cascades
+    // ContactFindOptions.SEARCH_FIELD_BBMPIN
+    // ContactFindOptions.SEARCH_FIELD_LINKEDIN
+    // ContactFindOptions.SEARCH_FIELD_TWITTER
+    // ContactFindOptions.SEARCH_FIELD_VIDEO_CHAT
+}
+
 module.exports = {
     search: function (successCb, failCb, args, env) {
         console.log("search is called");
@@ -40,6 +91,8 @@ module.exports = {
         var findOptions = {},
             cordovaFindOptions = {},
             result,
+            i,
+            l,
             key;
 
         for (key in args) {
@@ -51,7 +104,13 @@ module.exports = {
         result = new PluginResult(args, env);
         findOptions._eventId = cordovaFindOptions.callbackId;
         findOptions.fields = cordovaFindOptions[0];
-        findOptions.options = cordovaFindOptions[1];
+        findOptions.options = {};
+        findOptions.options.filter = [];
+        if (cordovaFindOptions[1].filter) {
+            for (i = 0, l = findOptions.fields.length; i < l; i++) {
+                populateFilter(findOptions.options.filter, findOptions.fields[i], cordovaFindOptions[1].filter);
+            }
+        }
 
         if (!contactUtils.validateFindArguments(findOptions.options)) {
             result.callbackError({
