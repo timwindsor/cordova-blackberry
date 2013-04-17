@@ -87,7 +87,6 @@ function populateFilter(filter, field, value) {
 module.exports = {
     search: function (successCb, failCb, args, env) {
         console.log("search is called");
-        debugger;
         var findOptions = {},
             cordovaFindOptions = {},
             result,
@@ -126,13 +125,12 @@ module.exports = {
         getAccountFilters(findOptions.options);
         pimContacts.getInstance().find(findOptions, result);
 
-        result.noResult(true);;
+        result.noResult(true);
     },
     save: function (successCb, failCb, args, env) {
-        console.log("Contacts save");
         var attributes = {},
             cordovaAttributes = {},
-            result,
+            result = new PluginResult(args, env),
             key;
 
         for (key in args) {
@@ -148,37 +146,23 @@ module.exports = {
         }
 
         attributes["_eventId"] = cordovaAttributes.callbackId;
-        result = new PluginResult(args, env);
         pimContacts.getInstance().save(attributes, result);
         result.noResult(true);
     },
     remove: function (successCb, failCb, args, env) {
-        console.log("Contacts remove");
-        var cordovaAttributes = {},
-            attributes = {},
-            result,
-            key,
-            contactId;
+        var attributes = {
+                "contactId": window.parseInt(JSON.parse(decodeURIComponent(args[0]))),
+                "_eventId": JSON.parse(decodeURIComponent(args.callbackId))
+            },
+            result = new PluginResult(args, env);
 
-        for (key in args) {
-            if (args.hasOwnProperty(key)) {
-                cordovaAttributes[key] = JSON.parse(decodeURIComponent(args[key]));
-            }
-        }
-
-        result = new PluginResult(args, env);
-
-        contactId = window.parseInt(cordovaAttributes[0]);
-        if (!window.isNaN(contactId)) {
-            attributes = { "contactId" : contactId,
-                           "_eventId" : cordovaAttributes.callbackId};
-
+        if (!window.isNaN(attributes.contactId)) {
             pimContacts.getInstance().remove(attributes, result);
-
+            result.noResult(true);
         } else {
             result.callbackError(ContactError.UNKNOWN_ERROR);
+            result.noResult(false);
         }
-        result.noResult(true);
     }
 }
 
