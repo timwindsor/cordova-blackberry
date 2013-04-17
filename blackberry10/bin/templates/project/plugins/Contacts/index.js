@@ -93,7 +93,7 @@ module.exports = {
     remove: function (successCb, failCb, args, env) {
         var attributes = {
                 "contactId": window.parseInt(JSON.parse(decodeURIComponent(args[0]))),
-                "_eventId": JSON.parse(decodeURIComponent(args.callbackId));
+                "_eventId": JSON.parse(decodeURIComponent(args.callbackId))
             },
             result = new PluginResult(args, env);
 
