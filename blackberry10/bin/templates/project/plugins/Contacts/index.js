@@ -85,17 +85,17 @@ function populateFilter(filter, field, value) {
 }
 
 function processJnextSaveData(result, JnextData) {
-    var data = JnextData;
+    var data = JnextData,
+        birthdayInfo;
+
+    if (data._success === true) {
+        //Convert date string from native to milliseconds since epoch for cordova-js
         birthdayInfo = data.birthday.split("-");
-
-    //Convert date string from native to milliseconds since epoch for cordova-js
-    data.birthday = new Date();
-    data.birthday.setYear(birthdayInfo[0]);
-    data.birthday.setMonth(birthdayInfo[1] - 1);
-    data.birthday.setDate(birthdayInfo[2]);
-    data.birthday = data.birthday.getTime();
-
-    result.callbackOk(data, false);
+        data.birthday = new Date(birthdayInfo[0], birthdayInfo[1] - 1, birthdayInfo[2]).getTime();
+        result.callbackOk(data, false);
+    } else {
+        result.callbackError(data.code, false);
+    }
 }
 
 module.exports = {
@@ -143,23 +143,17 @@ module.exports = {
     },
     save: function (successCb, failCb, args, env) {
         var attributes = {},
-            cordovaAttributes = {},
             result = new PluginResult(args, env),
             key;
 
-        for (key in args) {
-            if (args.hasOwnProperty(key)) {
-                cordovaAttributes[key] = JSON.parse(decodeURIComponent(args[key]));
-            }
-        }
-        attributes = cordovaAttributes[0];
+        attributes = JSON.parse(decodeURIComponent(args[0]));
 
         //convert birthday format for our native .so file
         if (attributes.birthday) {
             attributes.birthday = new Date(attributes.birthday).toDateString();
         }
 
-        attributes._eventId = cordovaAttributes.callbackId;
+        attributes._eventId = JSON.parse(decodeURIComponent(args.callbackId));
         pimContacts.getInstance().save(attributes, result, processJnextSaveData);
         result.noResult(true);
     },
@@ -210,7 +204,10 @@ JNEXT.PimContacts = function ()
     };
 
     self.remove = function (args, pluginResult) {
-        self.eventHandlers[args._eventId] = pluginResult;
+        self.eventHandlers[args._eventId] = {
+            "result" : pluginResult,
+            "action" : "remove"
+        };
         JNEXT.invoke(self.m_id, "remove " + JSON.stringify(args));
         return "";
     };
