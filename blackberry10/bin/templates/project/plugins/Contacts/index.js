@@ -144,13 +144,27 @@ module.exports = {
     save: function (successCb, failCb, args, env) {
         var attributes = {},
             result = new PluginResult(args, env),
-            key;
+            key,
+            nativeEmails = [];
 
         attributes = JSON.parse(decodeURIComponent(args[0]));
 
         //convert birthday format for our native .so file
         if (attributes.birthday) {
             attributes.birthday = new Date(attributes.birthday).toDateString();
+        }
+
+        if (attributes.emails) {
+            attributes.emails.forEach(function (email) {
+                if (!email.type && email.value) {
+                    nativeEmails.push({ "type" : "home", "value" : email.value });
+                }
+            });
+            attributes.emails = nativeEmails;
+        }
+
+        if (attributes.id !== null) {
+            attributes.id = window.parseInt(attributes.id);
         }
 
         attributes._eventId = JSON.parse(decodeURIComponent(args.callbackId));
