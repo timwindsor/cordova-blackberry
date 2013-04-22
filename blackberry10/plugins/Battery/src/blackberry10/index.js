@@ -17,7 +17,7 @@
 var SYSTEM_EVENTS = ["device.battery.statusChange",
                      "device.battery.chargeLow",
                      "device.battery.chargeCritical"],
-    device = window.qnx.webplatform.device,
+    device = window.wp.device,
     _clientListeners = {};
 
 module.exports = {
