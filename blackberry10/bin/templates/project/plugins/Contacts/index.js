@@ -84,14 +84,23 @@ function populateFilter(filter, field, value) {
     // ContactFindOptions.SEARCH_FIELD_VIDEO_CHAT
 }
 
+function convertBirthday(birthday) {
+    //Convert date string from native to milliseconds since epoch for cordova-js
+    var birthdayInfo;
+    if (birthday) {
+        birthdayInfo = birthday.split("-");
+        return new Date(birthdayInfo[0], birthdayInfo[1] - 1, birthdayInfo[2]).getTime();
+    } else {
+        return null;
+    }
+}
+
 function processJnextSaveData(result, JnextData) {
     var data = JnextData,
         birthdayInfo;
 
     if (data._success === true) {
-        //Convert date string from native to milliseconds since epoch for cordova-js
-        birthdayInfo = data.birthday.split("-");
-        data.birthday = new Date(birthdayInfo[0], birthdayInfo[1] - 1, birthdayInfo[2]).getTime();
+        data.birthday = convertBirthday(data.birthday);
         result.callbackOk(data, false);
     } else {
         result.callbackError(data.code, false);
@@ -100,10 +109,15 @@ function processJnextSaveData(result, JnextData) {
 
 function processJnextFindData(result, JnextData) {
     var data = JnextData,
+        i,
+        l,
         birthdayInfo;
 
     if (data._success === true) {
-        result.callbackError(1, false);
+        for (i = 0, l = data.contacts.length; i < l; i++) {
+            data.contacts[i].birthday = convertBirthday(data.contacts[i].birthday);
+        }
+        result.callbackOk(data.contacts, false);
     } else {
         result.callbackError(data.code, false);
     }
@@ -167,8 +181,12 @@ module.exports = {
 
         if (attributes.emails) {
             attributes.emails.forEach(function (email) {
-                if (!email.type && email.value) {
-                    nativeEmails.push({ "type" : "home", "value" : email.value });
+                if (email.value) {
+                    if (email.type) {
+                        nativeEmails.push({ "type" : email.type, "value" : email.value });
+                    } else {
+                        nativeEmails.push({ "type" : "home", "value" : email.value });
+                    }
                 }
             });
             attributes.emails = nativeEmails;
