@@ -98,6 +98,17 @@ function processJnextSaveData(result, JnextData) {
     }
 }
 
+function processJnextFindData(result, JnextData) {
+    var data = JnextData,
+        birthdayInfo;
+
+    if (data._success === true) {
+        result.callbackError(1, false);
+    } else {
+        result.callbackError(data.code, false);
+    }
+}
+
 module.exports = {
     search: function (successCb, failCb, args, env) {
         console.log("search is called");
@@ -137,7 +148,7 @@ module.exports = {
         }
 
         getAccountFilters(findOptions.options);
-        pimContacts.getInstance().find(findOptions, result);
+        pimContacts.getInstance().find(findOptions, result, processJnextFindData);
 
         result.noResult(true);
     },
@@ -183,8 +194,12 @@ JNEXT.PimContacts = function ()
     var self = this,
         hasInstance = false;
 
-    self.find = function (args, pluginResult) {
-        self.eventHandlers[args._eventId] = pluginResult;
+    self.find = function (args, pluginResult, handler) {
+        self.eventHandlers[args._eventId] = {
+            "result" : pluginResult,
+            "action" : "find",
+            "handler" : handler
+        };
         JNEXT.invoke(self.m_id, "find " + JSON.stringify(args));
         return "";
     };
@@ -244,7 +259,7 @@ JNEXT.PimContacts = function ()
         if (strEventDesc === "result") {
             args.result = escape(strData.split(" ").slice(2).join(" "));
             callbackInfo = self.eventHandlers[arData[1]];
-            if (callbackInfo.action === "save") {
+            if (callbackInfo.action === "save" || callbackInfo.action === "find") {
                 callbackInfo.handler(callbackInfo.result, JSON.parse(decodeURIComponent(args.result)));
             } else {
                 callbackInfo.result.callbackOk(JSON.parse(decodeURIComponent(args.result)));
