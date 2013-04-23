@@ -108,6 +108,16 @@ function processJnextSaveData(result, JnextData) {
     }
 }
 
+function processJnextRemoveData(result, JnextData) {
+    var data = JnextData;
+
+    if (data._success === true) {
+        result.callbackOk(data);
+    } else {
+        result.callbackError(ContactError.UNKNOWN_ERROR, false);
+    }
+}
+
 function processJnextFindData(eventId, eventHandler, JnextData) {
     var data = JnextData,
         i,
@@ -220,7 +230,7 @@ module.exports = {
             result = new PluginResult(args, env);
 
         if (!window.isNaN(attributes.contactId)) {
-            pimContacts.getInstance().remove(attributes, result);
+            pimContacts.getInstance().remove(attributes, result, processJnextRemoveData);
             result.noResult(true);
         } else {
             result.callbackError(ContactError.UNKNOWN_ERROR);
@@ -290,10 +300,11 @@ JNEXT.PimContacts = function ()
         return "";
     };
 
-    self.remove = function (args, pluginResult) {
+    self.remove = function (args, pluginResult, handler) {
         self.eventHandlers[args._eventId] = {
             "result" : pluginResult,
-            "action" : "remove"
+            "action" : "remove",
+            "handler" : handler
         };
         JNEXT.invoke(self.m_id, "remove " + JSON.stringify(args));
         return "";
@@ -331,12 +342,10 @@ JNEXT.PimContacts = function ()
         if (strEventDesc === "result") {
             args.result = escape(strData.split(" ").slice(2).join(" "));
             eventHandler = self.eventHandlers[arData[1]];
-            if (eventHandler.action === "save") {
+            if (eventHandler.action === "save" || eventHandler.action === "remove") {
                 eventHandler.handler(eventHandler.result, JSON.parse(decodeURIComponent(args.result)));
             } else if (eventHandler.action === "find") {
                 eventHandler.handler(arData[1], eventHandler, JSON.parse(decodeURIComponent(args.result)));
-            } else if (eventHandler.action === "remove") {
-                eventHandler.result.callbackOk(JSON.parse(decodeURIComponent(args.result)));
             }
         }
     };
