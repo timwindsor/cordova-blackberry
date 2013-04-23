@@ -17,6 +17,7 @@
 describe("Contacts", function () {
     var _apiDir = __dirname + "./../../../templates/project/plugins/Contacts/",
         index,
+        ContactError = require(_apiDir + "ContactError"),
         result = {
             noResult: jasmine.createSpy("PluginResult.noResult"),
             error: jasmine.createSpy("PluginResult.error"),
@@ -57,30 +58,52 @@ describe("Contacts", function () {
         delete GLOBAL.window;
     });
 
-    describe("remove", function () {
-        it("calls JNEXT with the correct params for valid contactId", function () {
+    describe("index.save", function () {
+        it("calls JNEXT save with the correct param if contactId provided", function () {
+            var contactProps = {
+                    "id": "123"
+                },
+                args = {
+                    "0": encodeURIComponent(JSON.stringify(contactProps)),
+                    "callbackId": encodeURIComponent(JSON.stringify("Contacts12345"))
+            };
+
+            window.parseInt.andCallFake(function () {
+                return 123;
+            });
+            index.save(function () {}, function () {}, args, {});
+            expect(JNEXT.invoke).toHaveBeenCalledWith(123, 'save ' + JSON.stringify({"id": 123, "_eventId": "Contacts12345"}));
+            expect(result.noResult).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe("index.remove", function () {
+        it("calls JNEXT remove with the correct params for valid contactId", function () {
             var args = {
                 "0": encodeURIComponent(JSON.stringify(123)),
                 "callbackId": encodeURIComponent(JSON.stringify("Contacts23424"))
             };
+
             window.parseInt.andCallFake(function () {
                 return 123;
             });
             index.remove(function () {}, function () {}, args, {});
-            expect(JNEXT.invoke).toHaveBeenCalledWith(123, 'remove {"contactId":123,"_eventId":"Contacts23424"}');
+            expect(JNEXT.invoke).toHaveBeenCalledWith(123, 'remove ' + JSON.stringify({"contactId": 123, "_eventId": "Contacts23424"}));
             expect(result.noResult).toHaveBeenCalledWith(true);
         });
+
         it("calls callbackError if invalid ID", function () {
             var args = {
                 "0": encodeURIComponent(JSON.stringify("asdfas")),
                 "callbackId": encodeURIComponent(JSON.stringify("Contacts23424"))
             };
+
             window.isNaN.andCallFake(function() {
                 return true;
             });
             index.remove(function () {}, function () {}, args, {});
-            expect(result.callbackError).toHaveBeenCalled();
-            expect(result.noResult).toHaveBeenCalled();
+            expect(result.callbackError).toHaveBeenCalledWith(ContactError.UNKNOWN_ERROR);
+            expect(result.noResult).toHaveBeenCalledWith(false);
         });
     });
 });
