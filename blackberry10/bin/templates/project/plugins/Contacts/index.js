@@ -34,54 +34,55 @@ function getAccountFilters(options) {
     }
 }
 
-function populateFilter(filter, field, value) {
-    if (field === "displayName" || field === "name") {
-        filter.push({
-            "fieldName" : ContactFindOptions.SEARCH_FIELD_GIVEN_NAME,
-            "fieldValue" : value
-        });
+function populateSearchFields(fields) {
+    var i,
+        l,
+        key,
+        searchFieldsObject = {},
+        searchFields = [];
 
-        filter.push({
-            "fieldName" : ContactFindOptions.SEARCH_FIELD_FAMILY_NAME,
-            "fieldValue" : value
-        });
-    } else if (field === "nickname") {
-        // not supported by Cascades
-    } else if (field === "phoneNumbers") {
-        filter.push({
-            "fieldName" : ContactFindOptions.SEARCH_FIELD_PHONE,
-            "fieldValue" : value
-        });
-    } else if (field === "emails") {
-        filter.push({
-            "fieldName" : ContactFindOptions.SEARCH_FIELD_EMAIL,
-            "fieldValue" : value
-        });
-    } else if (field === "addresses") {
-        // not supported by Cascades
-    } else if (field === "ims") {
-        // not supported by Cascades
-    } else if (field === "organizations") {
-        filter.push({
-            "fieldName" : ContactFindOptions.SEARCH_FIELD_ORGANIZATION_NAME,
-            "fieldValue" : value
-        });
-    } else if (field === "birthday") {
-        // not supported by Cascades
-    } else if (field === "note") {
-        // not supported by Cascades
-    } else if (field === "photos") {
-        // not supported by Cascades
-    } else if (field === "categories") {
-        // not supported by Cascades
-    } else if (field === "urls") {
-        // not supported by Cascades
+    for (i = 0, l = fields.length; i < l; i++) {
+        if (fields[i] === "*") {
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_GIVEN_NAME] = true;
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_FAMILY_NAME] = true;
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_PHONE] = true;
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_EMAIL] = true;
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_ORGANIZATION_NAME] = true;
+        } else if (fields[i] === "displayName" || fields[i] === "name") {
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_GIVEN_NAME] = true;
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_FAMILY_NAME] = true;
+        } else if (fields[i] === "nickname") {
+            // not supported by Cascades
+        } else if (fields[i] === "phoneNumbers") {
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_PHONE] = true;
+        } else if (fields[i] === "emails") {
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_EMAIL] = true;
+        } else if (field === "addresses") {
+            // not supported by Cascades
+        } else if (field === "ims") {
+            // not supported by Cascades
+        } else if (field === "organizations") {
+            searchFieldsObject[ContactFindOptions.SEARCH_FIELD_ORGANIZATION_NAME] = true;
+        } else if (field === "birthday") {
+            // not supported by Cascades
+        } else if (field === "note") {
+            // not supported by Cascades
+        } else if (field === "photos") {
+            // not supported by Cascades
+        } else if (field === "categories") {
+            // not supported by Cascades
+        } else if (field === "urls") {
+            // not supported by Cascades
+        }
     }
-    // More fields supported by Cascades
-    // ContactFindOptions.SEARCH_FIELD_BBMPIN
-    // ContactFindOptions.SEARCH_FIELD_LINKEDIN
-    // ContactFindOptions.SEARCH_FIELD_TWITTER
-    // ContactFindOptions.SEARCH_FIELD_VIDEO_CHAT
+
+    for (key in searchFieldsObject) {
+        if (searchFieldsObject.hasOwnProperty(key)) {
+            searchFields.push(window.parseInt(key));
+        }
+    }
+
+    return searchFields;
 }
 
 function convertBirthday(birthday) {
@@ -107,30 +108,64 @@ function processJnextSaveData(result, JnextData) {
     }
 }
 
-function processJnextFindData(result, JnextData) {
+function processJnextFindData(eventId, eventHandler, JnextData) {
     var data = JnextData,
         i,
         l,
+        more = false,
+        resultsObject = {},
         birthdayInfo;
 
-    if (data._success === true) {
+    if (data.contacts) {
         for (i = 0, l = data.contacts.length; i < l; i++) {
             data.contacts[i].birthday = convertBirthday(data.contacts[i].birthday);
         }
-        result.callbackOk(data.contacts, false);
     } else {
-        result.callbackError(data.code, false);
+        data.contacts = []; // if JnextData.contacts return null, return an empty array
+    }
+
+    if (data._success === true) {
+        eventHandler.error = false;
+    }
+
+    if (eventHandler.multiple) {
+        // Concatenate results; do not add the same contacts
+        for (i = 0, l = eventHandler.searchResult.length; i < l; i++) {
+            resultsObject[eventHandler.searchResult[i].id] = true;
+        }
+
+        for (i = 0, l = data.contacts.length; i < l; i++) {
+            if (resultsObject[data.contacts[i].id]) {
+                // Already existing
+            } else {
+                eventHandler.searchResult.push(data.contacts[i]);
+            }
+        }
+
+        // check if more search is required
+        eventHandler.searchFieldIndex++;
+        if (eventHandler.searchFieldIndex < eventHandler.searchFields.length) {
+            more = true;
+        }
+    } else {
+        eventHandler.searchResult = data.contacts;
+    }
+
+    if (more) {
+        pimContacts.getInstance().invokeJnextSearch(eventId);
+    } else {
+        if (eventHandler.error) {
+            eventHandler.result.callbackError(data.code, false);
+        } else {
+            eventHandler.result.callbackOk(eventHandler.searchResult, false);
+        }
     }
 }
 
 module.exports = {
     search: function (successCb, failCb, args, env) {
-        console.log("search is called");
-        var findOptions = {},
-            cordovaFindOptions = {},
+        var cordovaFindOptions = {},
             result,
-            i,
-            l,
             key;
 
         for (key in args) {
@@ -140,30 +175,7 @@ module.exports = {
         }
 
         result = new PluginResult(args, env);
-        findOptions._eventId = cordovaFindOptions.callbackId;
-        findOptions.fields = cordovaFindOptions[0];
-        findOptions.options = {};
-        findOptions.options.filter = [];
-        if (cordovaFindOptions[1].filter) {
-            for (i = 0, l = findOptions.fields.length; i < l; i++) {
-                populateFilter(findOptions.options.filter, findOptions.fields[i], cordovaFindOptions[1].filter);
-            }
-        }
-
-        if (!contactUtils.validateFindArguments(findOptions.options)) {
-            result.callbackError({
-                "result": escape(JSON.stringify({
-                    "_success": false,
-                    "code": ContactError.INVALID_ARGUMENT_ERROR
-                }))
-            });
-            result.noResult(true);
-            return;
-        }
-
-        getAccountFilters(findOptions.options);
-        pimContacts.getInstance().find(findOptions, result, processJnextFindData);
-
+        pimContacts.getInstance().find(cordovaFindOptions, result, processJnextFindData);
         result.noResult(true);
     },
     save: function (successCb, failCb, args, env) {
@@ -226,15 +238,43 @@ JNEXT.PimContacts = function ()
     var self = this,
         hasInstance = false;
 
-    self.find = function (args, pluginResult, handler) {
-        self.eventHandlers[args._eventId] = {
+    self.find = function (cordovaFindOptions, pluginResult, handler) {
+        self.eventHandlers[cordovaFindOptions.callbackId] = {
             "result" : pluginResult,
             "action" : "find",
-            "handler" : handler
+            "multiple" : cordovaFindOptions[1].filter ? true : false,
+            "fields" : cordovaFindOptions[0],
+            "searchFilter" : cordovaFindOptions[1].filter,
+            "searchFields" : cordovaFindOptions[1].filter ? populateSearchFields(cordovaFindOptions[0]) : null,
+            "searchFieldIndex" : 0,
+            "searchResult" : [],
+            "handler" : handler,
+            "error" : true
         };
-        JNEXT.invoke(self.m_id, "find " + JSON.stringify(args));
+
+        self.invokeJnextSearch(cordovaFindOptions.callbackId);
         return "";
     };
+
+    self.invokeJnextSearch = function(eventId) {
+        var jnextArgs = {},
+            findHandler = self.eventHandlers[eventId];
+
+        jnextArgs._eventId = eventId;
+        jnextArgs.fields = findHandler.fields;
+        jnextArgs.options = {};
+        jnextArgs.options.filter = [];
+
+        if (findHandler.multiple) {
+            jnextArgs.options.filter.push({
+                "fieldName" : findHandler.searchFields[findHandler.searchFieldIndex],
+                "fieldValue" : findHandler.searchFilter
+            });
+            //findHandler.searchFieldIndex++;
+        }
+
+        JNEXT.invoke(self.m_id, "find " + JSON.stringify(jnextArgs));
+    }
 
     self.getContact = function (args) {
         return JSON.parse(JNEXT.invoke(self.m_id, "getContact " + JSON.stringify(args)));
@@ -285,16 +325,18 @@ JNEXT.PimContacts = function ()
     self.onEvent = function (strData) {
         var arData = strData.split(" "),
             strEventDesc = arData[0],
-            callbackInfo,
+            eventHandler,
             args = {};
 
         if (strEventDesc === "result") {
             args.result = escape(strData.split(" ").slice(2).join(" "));
-            callbackInfo = self.eventHandlers[arData[1]];
-            if (callbackInfo.action === "save" || callbackInfo.action === "find") {
-                callbackInfo.handler(callbackInfo.result, JSON.parse(decodeURIComponent(args.result)));
-            } else {
-                callbackInfo.result.callbackOk(JSON.parse(decodeURIComponent(args.result)));
+            eventHandler = self.eventHandlers[arData[1]];
+            if (eventHandler.action === "save") {
+                eventHandler.handler(eventHandler.result, JSON.parse(decodeURIComponent(args.result)));
+            } else if (eventHandler.action === "find") {
+                eventHandler.handler(arData[1], eventHandler, JSON.parse(decodeURIComponent(args.result)));
+            } else if (eventHandler.action === "remove") {
+                eventHandler.result.callbackOk(JSON.parse(decodeURIComponent(args.result)));
             }
         }
     };
