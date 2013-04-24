@@ -51,6 +51,9 @@ function createDebugtoken(previous, baton) {
         if (code === 0) {
             debugtoken = true;
         }
+        else {
+            baton.drop();
+        }
 
         baton.pass();
     });
@@ -94,7 +97,7 @@ function doReleaseBuild() {
         bbwpArgv.push("--password");
         bbwpArgv.push( projectProperties.keystorepass);
     } else {
-        throw "No signing password provided. Please use --keystorepass via command-line or enter a value for keystorepass in project.json";
+        throw "No signing password provided. Please run keystorepass <password>";
     }
 
     copyArgIfExists("buildId");

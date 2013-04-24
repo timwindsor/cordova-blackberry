@@ -155,12 +155,12 @@ self.createToken = function (projectProperties, target, callback) {
     }
 
     if (pins.length === 0) {
-        logger.warn(localize.translate("WARN_NO_DEVICE_PIN_FOUND"));
+        logger.error(localize.translate("WARN_NO_DEVICE_PIN_FOUND"));
         if (callback && typeof callback === "function") {
             callback(-1);
         }
     } else if (!properties.keystorepass) {
-        logger.warn(localize.translate("WARN_NO_SIGNING_PASSWORD_PROVIDED"));
+        logger.error(localize.translate("WARN_NO_SIGNING_PASSWORD_PROVIDED"));
         if (callback && typeof callback === "function") {
             callback(-1);
         }
