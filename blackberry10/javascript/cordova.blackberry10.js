@@ -1,6 +1,6 @@
 // Platform: blackberry10
-// dev-ga2e3993
-// File generated at :: Mon May 06 2013 18:49:10 GMT-0400 (EDT)
+// 2.7.0rc1-38-ga2e3993
+// File generated at :: Fri May 10 2013 10:58:22 GMT-0400 (EDT)
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -20,7 +20,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = 'dev-ga2e3993';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-38-ga2e3993';
 // file: lib/scripts/require.js
 
 var require,
@@ -795,7 +795,6 @@ define("cordova/exec", function(require, exports, module) {
 var cordova = require('cordova'),
     plugins = {
         'Compass' : require('cordova/plugin/blackberry10/magnetometer'),
-        'Capture' : require('cordova/plugin/blackberry10/capture'),
         'Media': require('cordova/plugin/blackberry10/media'),
         'FileTransfer': require('cordova/plugin/blackberry10/fileTransfer')
     };
@@ -3221,67 +3220,6 @@ module.exports = {
     close: function (args, win, fail) {
         browser.close();
         return { "status" : cordova.callbackStatus.OK, "message" : "" };
-    }
-};
-
-});
-
-// file: lib/blackberry10/plugin/blackberry10/capture.js
-define("cordova/plugin/blackberry10/capture", function(require, exports, module) {
-
-var cordova = require('cordova');
-
-function capture(action, win, fail) {
-    var noop = function () {};
-
-    blackberry.invoke.card.invokeCamera(action, function (path) {
-        var sb = blackberry.io.sandbox;
-        blackberry.io.sandbox = false;
-        window.webkitRequestFileSystem(window.PERSISTENT, 1024, function (fs) {
-            fs.root.getFile(path, {}, function (fe) {
-                fe.file(function (file) {
-                    file.fullPath = fe.fullPath;
-                    win([file]);
-                    blackberry.io.sandbox = sb;
-                }, fail);
-            }, fail);
-        }, fail);
-    }, noop, noop);
-}
-
-module.exports = {
-    getSupportedAudioModes: function (args, win, fail) {
-        return {"status": cordova.callbackStatus.OK, "message": []};
-    },
-    getSupportedImageModes: function (args, win, fail) {
-        return {"status": cordova.callbackStatus.OK, "message": []};
-    },
-    getSupportedVideoModes: function (args, win, fail) {
-        return {"status": cordova.callbackStatus.OK, "message": []};
-    },
-    captureImage: function (args, win, fail) {
-        if (args[0].limit > 0) {
-            capture("photo", win, fail);
-        }
-        else {
-            win([]);
-        }
-
-        return { "status" : cordova.callbackStatus.NO_RESULT, "message" : "WebWorks Is On It" };
-    },
-    captureVideo: function (args, win, fail) {
-        if (args[0].limit > 0) {
-            capture("video", win, fail);
-        }
-        else {
-            win([]);
-        }
-
-        return { "status" : cordova.callbackStatus.NO_RESULT, "message" : "WebWorks Is On It" };
-    },
-    captureAudio: function (args, win, fail) {
-        fail("Capturing Audio not supported");
-        return {"status": cordova.callbackStatus.NO_RESULT, "message": "WebWorks Is On It"};
     }
 };
 
