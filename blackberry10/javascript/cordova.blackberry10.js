@@ -1,5 +1,5 @@
 // Platform: blackberry10
-// 2.7.0rc1-73-g0bca505
+// 1.1.1
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-73-g0bca505';
+var CORDOVA_JS_BUILD_LABEL = '1.1.1';
 // file: lib/scripts/require.js
 
 var require,
@@ -938,6 +938,7 @@ module.exports = {
 
         modulemapper.clobbers('cordova/plugin/blackberry10/vibrate', 'navigator.notification.vibrate');
         modulemapper.clobbers('cordova/plugin/File', 'File');
+        modulemapper.clobbers('cordova/plugin/blackberry10/Media', 'Media');
         modulemapper.merges('cordova/plugin/blackberry10/compass', 'navigator.compass');
 
         modulemapper.mapModules(window);
@@ -2491,7 +2492,7 @@ module.exports = LocalFileSystem;
 
 });
 
-// file: lib/common/plugin/Media.js
+// file: lib/blackberry10/plugin/Media.js
 define("cordova/plugin/Media", function(require, exports, module) {
 
 var argscheck = require('cordova/argscheck'),
@@ -2522,6 +2523,8 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     this.statusCallback = statusCallback;
     this._duration = -1;
     this._position = -1;
+    this._audio = new Audio(src);
+    //this._audio.load();
     exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
 };
 
@@ -2548,34 +2551,47 @@ Media.get = function(id) {
  * Start or resume playing audio file.
  */
 Media.prototype.play = function(options) {
-    exec(null, null, "Media", "startPlayingAudio", [this.id, this.src, options]);
+    //exec(null, null, "Media", "startPlayingAudio", [this.id, this.src, options]);
+    if (this._audio) {
+        this._audio.play();
+    }
 };
 
 /**
  * Stop playing audio file.
  */
 Media.prototype.stop = function() {
-    var me = this;
-    exec(function() {
-        me._position = 0;
-    }, this.errorCallback, "Media", "stopPlayingAudio", [this.id]);
+    //var me = this;
+    //exec(function() {
+      //  me._position = 0;
+    //}, this.errorCallback, "Media", "stopPlayingAudio", [this.id]);
+    if (this._audio) {
+        this._audio.pause();
+        this._audio.currentTime = 0;
+    }
 };
 
 /**
  * Seek or jump to a new time in the track..
  */
 Media.prototype.seekTo = function(milliseconds) {
-    var me = this;
-    exec(function(p) {
-        me._position = p;
-    }, this.errorCallback, "Media", "seekToAudio", [this.id, milliseconds]);
+    //var me = this;
+    //exec(function(p) {
+      //  me._position = p;
+    //}, this.errorCallback, "Media", "seekToAudio", [this.id, milliseconds]);
+    if (this._audio) {
+        this._audio.currentTime = 1000 * milliseconds;
+    }
 };
 
 /**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
-    exec(null, this.errorCallback, "Media", "pausePlayingAudio", [this.id]);
+    //exec(null, this.errorCallback, "Media", "pausePlayingAudio", [this.id]);
+    if (this._audio) {
+        this._audio.pause();
+    }
 };
 
 /**
@@ -2585,46 +2601,61 @@ Media.prototype.pause = function() {
  * @return      duration or -1 if not known.
  */
 Media.prototype.getDuration = function() {
-    return this._duration;
+    //return this._duration;
+    if (this._audio) {
+        return this._audio.duration;
+    } else {
+        return -1;
+    }
 };
 
 /**
  * Get position of audio.
  */
 Media.prototype.getCurrentPosition = function(success, fail) {
-    var me = this;
-    exec(function(p) {
-        me._position = p;
-        success(p);
-    }, fail, "Media", "getCurrentPositionAudio", [this.id]);
+    //var me = this;
+    //exec(function(p) {
+      //  me._position = p;
+      //  success(p);
+    //}, fail, "Media", "getCurrentPositionAudio", [this.id]);
+    if (this._audio) {
+        return this._audio.currentTime;
+    } else {
+        return -1;
+    }
 };
 
 /**
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    exec(null, this.errorCallback, "Media", "startRecordingAudio", [this.id, this.src]);
+    //exec(null, this.errorCallback, "Media", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    exec(null, this.errorCallback, "Media", "stopRecordingAudio", [this.id]);
+    //exec(null, this.errorCallback, "Media", "stopRecordingAudio", [this.id]);
 };
 
 /**
  * Release the resources.
  */
 Media.prototype.release = function() {
-    exec(null, this.errorCallback, "Media", "release", [this.id]);
+    //exec(null, this.errorCallback, "Media", "release", [this.id]);
+    this._audio.src = undefined;
+    this._audio = undefined;
 };
 
 /**
  * Adjust the volume.
  */
 Media.prototype.setVolume = function(volume) {
-    exec(null, null, "Media", "setVolume", [this.id, volume]);
+    //exec(null, null, "Media", "setVolume", [this.id, volume]);
+    if (this._audio) {
+        this._audio.volume = volume;
+    }
 };
 
 /**
@@ -3212,6 +3243,216 @@ module.exports = {
         return { "status" : cordova.callbackStatus.OK, "message" : "" };
     }
 };
+
+});
+
+// file: lib/blackberry10/plugin/blackberry10/Media.js
+define("cordova/plugin/blackberry10/Media", function(require, exports, module) {
+
+var argscheck = require('cordova/argscheck'),
+    utils = require('cordova/utils'),
+    exec = require('cordova/exec');
+
+var mediaObjects = {};
+
+/**
+ * This class provides access to the device media, interfaces to both sound and video
+ *
+ * @constructor
+ * @param src                   The file name or url to play
+ * @param successCallback       The callback to be called when the file is done playing or recording.
+ *                                  successCallback()
+ * @param errorCallback         The callback to be called if there is an error.
+ *                                  errorCallback(int errorCode) - OPTIONAL
+ * @param statusCallback        The callback to be called when media status has changed.
+ *                                  statusCallback(int statusCode) - OPTIONAL
+ */
+var Media = function(src, successCallback, errorCallback, statusCallback) {
+    argscheck.checkArgs('SFFF', 'Media', arguments);
+    this.id = utils.createUUID();
+    mediaObjects[this.id] = this;
+    this.src = src;
+    this.successCallback = successCallback;
+    this.errorCallback = errorCallback;
+    this.statusCallback = statusCallback;
+    this._duration = -1;
+    this._position = -1;
+    this._audio = new Audio(src);
+    //this._audio.load();
+    exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
+};
+
+// Media messages
+Media.MEDIA_STATE = 1;
+Media.MEDIA_DURATION = 2;
+Media.MEDIA_POSITION = 3;
+Media.MEDIA_ERROR = 9;
+
+// Media states
+Media.MEDIA_NONE = 0;
+Media.MEDIA_STARTING = 1;
+Media.MEDIA_RUNNING = 2;
+Media.MEDIA_PAUSED = 3;
+Media.MEDIA_STOPPED = 4;
+Media.MEDIA_MSG = ["None", "Starting", "Running", "Paused", "Stopped"];
+
+// "static" function to return existing objs.
+Media.get = function(id) {
+    return mediaObjects[id];
+};
+
+/**
+ * Start or resume playing audio file.
+ */
+Media.prototype.play = function(options) {
+    //exec(null, null, "Media", "startPlayingAudio", [this.id, this.src, options]);
+    if (this._audio) {
+        this._audio.play();
+    }
+};
+
+/**
+ * Stop playing audio file.
+ */
+Media.prototype.stop = function() {
+    //var me = this;
+    //exec(function() {
+      //  me._position = 0;
+    //}, this.errorCallback, "Media", "stopPlayingAudio", [this.id]);
+    if (this._audio) {
+        this._audio.pause();
+        this._audio.currentTime = 0;
+    }
+};
+
+/**
+ * Seek or jump to a new time in the track..
+ */
+Media.prototype.seekTo = function(milliseconds) {
+    //var me = this;
+    //exec(function(p) {
+      //  me._position = p;
+    //}, this.errorCallback, "Media", "seekToAudio", [this.id, milliseconds]);
+    if (this._audio) {
+        this._audio.currentTime = 1000 * milliseconds;
+    }
+};
+
+/**
+ * Pause playing audio file.
+ */
+Media.prototype.pause = function() {
+    //exec(null, this.errorCallback, "Media", "pausePlayingAudio", [this.id]);
+    if (this._audio) {
+        this._audio.pause();
+    }
+};
+
+/**
+ * Get duration of an audio file.
+ * The duration is only set for audio that is playing, paused or stopped.
+ *
+ * @return      duration or -1 if not known.
+ */
+Media.prototype.getDuration = function() {
+    //return this._duration;
+    if (this._audio) {
+        return this._audio.duration;
+    } else {
+        return -1;
+    }
+};
+
+/**
+ * Get position of audio.
+ */
+Media.prototype.getCurrentPosition = function(success, fail) {
+    //var me = this;
+    //exec(function(p) {
+      //  me._position = p;
+      //  success(p);
+    //}, fail, "Media", "getCurrentPositionAudio", [this.id]);
+    if (this._audio) {
+        return this._audio.currentTime;
+    } else {
+        return -1;
+    }
+};
+
+/**
+ * Start recording audio file.
+ */
+Media.prototype.startRecord = function() {
+    //exec(null, this.errorCallback, "Media", "startRecordingAudio", [this.id, this.src]);
+};
+
+/**
+ * Stop recording audio file.
+ */
+Media.prototype.stopRecord = function() {
+    //exec(null, this.errorCallback, "Media", "stopRecordingAudio", [this.id]);
+};
+
+/**
+ * Release the resources.
+ */
+Media.prototype.release = function() {
+    //exec(null, this.errorCallback, "Media", "release", [this.id]);
+    this._audio.src = undefined;
+    this._audio = undefined;
+};
+
+/**
+ * Adjust the volume.
+ */
+Media.prototype.setVolume = function(volume) {
+    //exec(null, null, "Media", "setVolume", [this.id, volume]);
+    if (this._audio) {
+        this._audio.volume = volume;
+    }
+};
+
+/**
+ * Audio has status update.
+ * PRIVATE
+ *
+ * @param id            The media object id (string)
+ * @param msgType       The 'type' of update this is
+ * @param value         Use of value is determined by the msgType
+ */
+Media.onStatus = function(id, msgType, value) {
+
+    var media = mediaObjects[id];
+
+    if(media) {
+        switch(msgType) {
+            case Media.MEDIA_STATE :
+                media.statusCallback && media.statusCallback(value);
+                if(value == Media.MEDIA_STOPPED) {
+                    media.successCallback && media.successCallback();
+                }
+                break;
+            case Media.MEDIA_DURATION :
+                media._duration = value;
+                break;
+            case Media.MEDIA_ERROR :
+                media.errorCallback && media.errorCallback(value);
+                break;
+            case Media.MEDIA_POSITION :
+                media._position = Number(value);
+                break;
+            default :
+                console.error && console.error("Unhandled Media.onStatus :: " + msgType);
+                break;
+        }
+    }
+    else {
+         console.error && console.error("Received Media.onStatus callback for unknown media :: " + id);
+    }
+
+};
+
+module.exports = Media;
 
 });
 
@@ -3812,180 +4053,6 @@ module.exports = {
     stop: function (args, win, fail) {
         window.removeEventListener("deviceorientation", callback);
         return { "status" : cordova.callbackStatus.OK, "message" : "removed" };
-    }
-};
-
-});
-
-// file: lib/blackberry10/plugin/blackberry10/media.js
-define("cordova/plugin/blackberry10/media", function(require, exports, module) {
-
-var cordova = require('cordova'),
-    audioObjects = {};
-
-module.exports = {
-    create: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            src = args[1];
-
-        if (typeof src == "undefined"){
-            audioObjects[id] = new Audio();
-        } else {
-            audioObjects[id] = new Audio(src);
-        }
-
-        return {"status" : 1, "message" : "Audio object created" };
-    },
-    startPlayingAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (args.length === 1 || typeof args[1] == "undefined" ) {
-            return {"status" : 9, "message" : "Media source argument not found"};
-        }
-
-        if (audio) {
-            audio.pause();
-            audioObjects[id] = undefined;
-        }
-
-        audio = audioObjects[id] = new Audio(args[1]);
-        audio.play();
-        return {"status" : 1, "message" : "Audio play started" };
-    },
-    stopPlayingAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (!audio) {
-            return {"status" : 2, "message" : "Audio Object has not been initialized"};
-        }
-
-        audio.pause();
-        audioObjects[id] = undefined;
-
-        return {"status" : 1, "message" : "Audio play stopped" };
-    },
-    seekToAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (!audio) {
-            result = {"status" : 2, "message" : "Audio Object has not been initialized"};
-        } else if (args.length === 1) {
-            result = {"status" : 9, "message" : "Media seek time argument not found"};
-        } else {
-            try {
-                audio.currentTime = args[1];
-            } catch (e) {
-                console.log('Error seeking audio: ' + e);
-                return {"status" : 3, "message" : "Error seeking audio: " + e};
-            }
-
-            result = {"status" : 1, "message" : "Seek to audio succeeded" };
-        }
-        return result;
-    },
-    pausePlayingAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (!audio) {
-            return {"status" : 2, "message" : "Audio Object has not been initialized"};
-        }
-
-        audio.pause();
-
-        return {"status" : 1, "message" : "Audio paused" };
-    },
-    getCurrentPositionAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (!audio) {
-            return {"status" : 2, "message" : "Audio Object has not been initialized"};
-        }
-
-        return {"status" : 1, "message" : audio.currentTime };
-    },
-    getDuration: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (!audio) {
-            return {"status" : 2, "message" : "Audio Object has not been initialized"};
-        }
-
-        return {"status" : 1, "message" : audio.duration };
-    },
-    startRecordingAudio: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        if (args.length <= 1) {
-            return {"status" : 9, "message" : "Media start recording, insufficient arguments"};
-        }
-
-        blackberry.media.microphone.record(args[1], win, fail);
-        return { "status" : cordova.callbackStatus.NO_RESULT, "message" : "WebWorks Is On It" };
-    },
-    stopRecordingAudio: function (args, win, fail) {
-    },
-    release: function (args, win, fail) {
-        if (!args.length) {
-            return {"status" : 9, "message" : "Media Object id was not sent in arguments"};
-        }
-
-        var id = args[0],
-            audio = audioObjects[id],
-            result;
-
-        if (audio) {
-            if(audio.src !== ""){
-                audio.src = undefined;
-            }
-            audioObjects[id] = undefined;
-            //delete audio;
-        }
-
-        result = {"status" : 1, "message" : "Media resources released"};
-
-        return result;
     }
 };
 
