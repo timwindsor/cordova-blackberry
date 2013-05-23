@@ -2524,8 +2524,9 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     this._duration = -1;
     this._position = -1;
     this._audio = new Audio(src);
+    this._dummy = null;
     //this._audio.load();
-    exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
+    //exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
 };
 
 // Media messages
@@ -3279,7 +3280,7 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     this._position = -1;
     this._audio = new Audio(src);
     //this._audio.load();
-    exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
+    //exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
 };
 
 // Media messages
