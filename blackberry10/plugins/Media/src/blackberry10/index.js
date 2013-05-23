@@ -27,6 +27,9 @@ module.exports = {
             audioObjects[id] = new Audio(src);
         }
 
+        audioObjects[id].load();
+        audioObjects[id].pause();
+
         //return {"status" : 1, "message" : "Audio object created" };
         pluginResult.ok(null, false);
     },
