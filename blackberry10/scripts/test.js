@@ -41,13 +41,19 @@ module.exports = function (done, custom) {
     }
 
     function execSpecs(folders) {
+        console.log("Folders: ", folders);
         var failed = 0;
         if (folders.length > 0) {
             console.log("Running tests in: " + folders[folders.length - 1]);
-            jasmine.executeSpecsInFolder(path.resolve(folders.pop()), function (runner) {
-                execSpecs(folders);
-                failed = runner.results().failedcount === 0 ? 0 : 1;
-            }, verbose, coloured);
+            jasmine.executeSpecsInFolder({
+                'specFolders': [path.resolve(folders.pop())],
+                'onComplete': function (runner) {
+                    execSpecs(folders);
+                    failed = runner.results().failedcount === 0 ? 0 : 1;
+                }, 
+                'isVerbose': verbose,
+                'showColors': coloured
+            });
         }
         else {
             (typeof done !== "function" ? process.exit : done)(failed);

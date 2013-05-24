@@ -15,7 +15,7 @@
     "test": "./node_modules/jake/bin/cli.js"
   },
   "dependencies": {
-    "jasmine-node": "1.0.7",
+    "jasmine-node": "1.7.1",
     "jWorkflow": "0.8.0",
     "commander": "0.5.2",
     "localize": "*0.4.2",
