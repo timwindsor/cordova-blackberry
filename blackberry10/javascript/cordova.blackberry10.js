@@ -3286,10 +3286,10 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
         Media.onStatus(that.id, Media.MEDIA_ERROR, this.error);
     }, false);
     this._audio.addEventListener("timeupdate", function () {
-        Media.onStatus(that.id, Media.MEDIA_POSITION, this._audio.currentTime);
+        Media.onStatus(that.id, Media.MEDIA_POSITION, that._audio.currentTime);
     }, false);
     this._audio.addEventListener("durationchange", function () {
-        Media.onStatus(that.id, Media.MEDIA_DURATION, this._audio.duration);
+        Media.onStatus(that.id, Media.MEDIA_DURATION, that._audio.duration);
     }, false);
     this._audio.addEventListener("pause", function () {
         if (this._audio.currentTime === 0) {
