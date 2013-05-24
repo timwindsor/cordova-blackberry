@@ -3276,8 +3276,8 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.statusCallback = statusCallback;
-    this._duration = -1;
-    this._position = -1;
+    //this._duration = -1;
+    //this._position = -1;
     this._audio = new Audio(src);
     //this._audio.load();
     //exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
@@ -3374,9 +3374,9 @@ Media.prototype.getCurrentPosition = function(success, fail) {
       //  success(p);
     //}, fail, "Media", "getCurrentPositionAudio", [this.id]);
     if (this._audio) {
-        return this._audio.currentTime;
+        success(this._audio.currentTime);
     } else {
-        return -1;
+        fail("Audio Object has not been initialized");
     }
 };
 
