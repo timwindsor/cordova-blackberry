@@ -3283,26 +3283,26 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     //exec(null, this.errorCallback, "Media", "create", [this.id, this.src]);
     var that = this;
     this._audio.addEventListener("error", function () {
-        onStatus(that.id, Media.MEDIA_ERROR, this.error);
+        Media.onStatus(that.id, Media.MEDIA_ERROR, this.error);
     }, false);
     this._audio.addEventListener("timeupdate", function () {
-        onStatus(that.id, Media.MEDIA_POSITION, this._audio.currentTime);
+        Media.onStatus(that.id, Media.MEDIA_POSITION, this._audio.currentTime);
     }, false);
     this._audio.addEventListener("durationchange", function () {
-        onStatus(that.id, Media.MEDIA_DURATION, this._audio.duration);
+        Media.onStatus(that.id, Media.MEDIA_DURATION, this._audio.duration);
     }, false);
     this._audio.addEventListener("pause", function () {
         if (this._audio.currentTime === 0) {
-            onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_STOPPED);
+            Media.onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_STOPPED);
         } else {
-            onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_PAUSED);
+            Media.onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_PAUSED);
         }
     }, false);
     this._audio.addEventListener("loadstart", function () {
-        onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_STARTING);
+        Media.onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_STARTING);
     }, false);
     this._audio.addEventListener("canplaythrough", function () {
-        onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_RUNNING);
+        Media.onStatus(that.id, Media.MEDIA_STATE, Media.MEDIA_RUNNING);
     }, false);
 };
 
