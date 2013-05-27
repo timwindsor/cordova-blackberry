@@ -69,16 +69,24 @@ function validBarName(barName) {
 
 function validate() {
     if (!project_path) {
-        throw "You must give a project PATH";
+        console.log("You must give a project PATH");
+        help();
+        process.exit(2); 
     }
     if (fs.existsSync(project_path)) {
-        throw "The project path must be an empty directory";
+        console.log("The project path must be an empty directory");
+        help();
+        process.exit(2);
     }
     if (!validPackageName(app_id)) {
-        throw "App ID must be sequence of alpha-numeric (optionally seperated by '.') characters, no longer than 50 characters";
+        console.log("App ID must be sequence of alpha-numeric (optionally seperated by '.') characters, no longer than 50 characters");
+        help():
+        process.exit(2);
     }
     if (!validBarName(bar_name)) {
-        throw "BAR filename can only contain alpha-numeric, '.', '-' and '_' characters";
+        console.log("BAR filename can only contain alpha-numeric, '.', '-' and '_' characters");
+        help();
+        process.exit(2);
     }
 }
 
@@ -154,10 +162,14 @@ function installPlugins() {
     require(pluginScript).add(path.join(__dirname, "..", "plugins"));
 }
 
-if ( process.argv[2] === "-h" || process.argv[2] === "--help" ) {
+function help() {
     console.log("\nUsage: create <project path> [package name [BAR filename]] \n");
     console.log("Options: \n");
     console.log("   -h, --help      output usage information \n");
+}
+
+if ( process.argv[2] === "-h" || process.argv[2] === "--help" ) {
+    help();
 } else {
     try {
         validate();
